@@ -59,6 +59,7 @@ docs = [
 tests = [
     "pytest",
     "pytest-cov",
+    "pytest-html",
     "pytest-xdist",
 ]
 dev = [
