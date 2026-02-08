@@ -15,7 +15,7 @@ class StepFunction:
                  ignore_nan: bool = False) -> None:
         """
         Construct a piecewise step function given the times at which step
-        changes occur and the values for each time interval. For example,
+        changes occur and the values for each time interval. For example,.
 
         .. code-block:: python
 
@@ -66,7 +66,6 @@ class StepFunction:
         [nan  -1.  0.  1.]
 
         """
-
         if tp.ndim != 1 or yp.ndim != 1:
             raise ValueError("tp and yp must both be 1D.")
 
@@ -115,7 +114,7 @@ class RampedSteps:
     def __init__(self, tp: np.ndarray, yp: np.ndarray, t_ramp: float,
                  y0: float = 0.) -> None:
         """
-        This class acts like StepFunction, with the same tp, yp, and y0, but
+        A class similar to StepFunction, with the same tp, yp, and y0, but
         step transitions include ramps with duration t_ramp. Generally, this
         profile will be more stable compared to a StepFunction profile.
 
@@ -142,14 +141,13 @@ class RampedSteps:
         ValueError
             tp must be strictly increasing.
 
-        See also
+        See Also
         --------
         StepFunction :
             Uses hard discontinuous steps rather than ramped steps. Generally
             non-ideal for simulations, but may be useful elsewhere.
 
         """
-
         if tp.ndim != 1 or yp.ndim != 1:
             raise ValueError("tp and yp must both be 1D.")
 

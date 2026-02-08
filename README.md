@@ -5,19 +5,11 @@
 
  # thevenin
 
-[![CI][ci-b]][ci-l] &nbsp;
-![tests][test-b] &nbsp;
-![coverage][cov-b] &nbsp;
-[![pep8][pep-b]][pep-l]
-
-[ci-b]: https://github.com/NatLabRockies/thevenin/actions/workflows/ci.yml/badge.svg
-[ci-l]: https://github.com/NatLabRockies/thevenin/actions/workflows/ci.yml
-
-[test-b]: https://github.com/NatLabRockies/thevenin/blob/main/images/tests.svg?raw=true
-[cov-b]: https://github.com/NatLabRockies/thevenin/blob/main/images/coverage.svg?raw=true
-
-[pep-b]: https://img.shields.io/badge/code%20style-pep8-orange.svg
-[pep-l]: https://www.python.org/dev/peps/pep-0008
+[![ci](https://github.com/NatLabRockies/thevenin/actions/workflows/ci.yml/badge.svg)](https://github.com/NatLabRockies/thevenin/actions/workflows/ci.yml) &nbsp;
+![coverage](https://github.com/NatLabRockies/thevenin/blob/main/images/coverage.svg?raw=true) &nbsp;
+[![license](https://img.shields.io/badge/license-BSD--3-blue.svg)](https://github.com/NatLabRockies/thevenin/blob/main/LICENSE) &nbsp;
+[![downloads](https://static.pepy.tech/personalized-badge/thevenin?period=total&units=INTERNATIONAL_SYSTEM&left_color=GREY&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/thevenin) &nbsp;
+[![pypi](https://img.shields.io/pypi/v/thevenin)](https://pypi.org/project/thevenin)
 
 ## Summary
 This package is a wrapper for the well-known Thevenin equivalent circuit model. The model is comprised of a single series resistor followed by any number of parallel RC pairs. Figure 1 below illustrates a circuit with 2 RC pairs; however, the model can be run with as few as zero, and as many as $N$.

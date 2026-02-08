@@ -29,6 +29,7 @@ class ExitHandler:
     forgets to explicitly call it.
 
     """
+
     _registered = []
 
     @classmethod
@@ -49,7 +50,6 @@ class BaseSolution(IDAResult):
         consistent between all solutions.
 
         """
-
         self.vars = {}
 
     def __repr__(self) -> str:  # pragma: no cover
@@ -62,7 +62,6 @@ class BaseSolution(IDAResult):
             A console-readable instance representation.
 
         """
-
         classname = self.__class__.__name__
 
         def wrap_string(label: str, value: list, width: int):
@@ -115,7 +114,6 @@ class BaseSolution(IDAResult):
         None.
 
         """
-
         plt.figure()
         plt.plot(self.vars[x], self.vars[y], **kwargs)
 
@@ -148,7 +146,6 @@ class BaseSolution(IDAResult):
         None.
 
         """
-
         from ._basemodel import calculated_current
 
         sim = self._sim
@@ -219,7 +216,6 @@ class StepSolution(BaseSolution):
             Amount of time it took for IDASolver to perform the integration.
 
         """
-
         super().__init__()
 
         self._sim = deepcopy(sim)
@@ -278,7 +274,6 @@ class CycleSolution(BaseSolution):
             time of its following step. The default is 1e-3.
 
         """
-
         super().__init__()
 
         soln = deepcopy(list(soln))  # ensure type list, memory safe copy
@@ -378,7 +373,6 @@ class CycleSolution(BaseSolution):
             requested steps when 'idx' is a tuple.
 
         """
-
         if isinstance(idx, int):
             return deepcopy(self._solns[idx])
         elif isinstance(idx, (tuple, list)):
@@ -428,7 +422,6 @@ class CycleSolution(BaseSolution):
         instances do not share any common memory.
 
         """
-
         if not isinstance(soln, (StepSolution, CycleSolution)):
             raise TypeError("'soln' input must be StepSolution, CycleSolution.")
 

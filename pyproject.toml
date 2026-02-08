@@ -46,6 +46,31 @@ where = ["src"]
 [tool.setuptools.package-data]
 thevenin = ["_resources/*.yaml"]
 
+[tool.ruff]
+line-length = 80
+exclude = ["build", "docs", "images", "reports"]
+
+[tool.ruff.lint]
+preview = true
+select = [
+    "E",  # All pycodestyle errors
+    "W",  # All pycodestyle warnings
+    "F",  # All pyflakes errors
+    "B",  # All flake8-bugbear checks
+    "D",  # All pydocstyle checks
+]
+extend-select = [
+    "E302",  # Expected 2 blank lines, found 1 (requires preview=true, above)
+]
+ignore = [
+    "B007", "B009", "B028", "B905",
+    "D100", "D103", "D104", "D203", "D205", "D212", "D401",
+    "E201", "E202", "E226", "E241", "E731",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*" = ["D"]
+
 [project.optional-dependencies]
 docs = [
     "sphinx",
@@ -64,8 +89,7 @@ tests = [
 ]
 dev = [
     "nox",
-    "flake8",
-    "autopep8",
+    "ruff",
     "codespell",
     "genbadge[all]",
     "thevenin[docs,tests]",
