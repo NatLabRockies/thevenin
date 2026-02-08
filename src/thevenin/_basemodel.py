@@ -43,7 +43,6 @@ def calculated_current(voltage, ocv, hyst, eta_j, R0) -> float | np.ndarray:
         Calculated current at a single or multiple times [A].
 
     """
-
     if eta_j.ndim == 1:
         return -(voltage - ocv - hyst + np.sum(eta_j)) / R0
     elif eta_j.ndim == 2:
@@ -83,7 +82,6 @@ def calculated_voltage(current, ocv, hyst, eta_j, R0) -> float | np.ndarray:
         Calculated voltage at a single or multiple times [V].
 
     """
-
     if eta_j.ndim == 1:
         return ocv + hyst - np.sum(eta_j) - current*R0
     elif eta_j.ndim == 2:
@@ -223,7 +221,6 @@ class BaseModel(ABC):
             A console-readable instance representation.
 
         """
-
         keys = self._repr_keys
         values = [getattr(self, k) for k in keys]
 
@@ -253,7 +250,6 @@ class BaseModel(ABC):
     @property
     def _get_params_dict(self) -> dict:
         """Return the params dictionary needed to initialize a new instance."""
-
         params = {}
         for k in self._repr_keys:
             params[k] = getattr(self, k)
@@ -275,7 +271,6 @@ class BaseModel(ABC):
 
     def _check_RC_pairs(self) -> None:
         """Verify correct attributes are set based on num_RC_pairs."""
-
         missing_attrs = []
         for j in range(1, self.num_RC_pairs + 1):
             if not hasattr(self, 'R' + str(j)):

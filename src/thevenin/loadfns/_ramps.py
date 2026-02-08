@@ -67,7 +67,6 @@ class Ramp2Constant:
             'sharpness' must be strictly positive.
 
         """
-
         if m == 0. or abs(m) == np.inf:
             raise ValueError("m = 0. and m = inf are invalid slopes.")
         elif m > 0. and b >= step:

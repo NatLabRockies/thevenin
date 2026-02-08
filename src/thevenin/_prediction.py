@@ -18,8 +18,8 @@ class TransientState:
     def __init__(self, soc: float, T_cell: float, hyst: float,
                  eta_j: np.ndarray | None) -> None:
         """
-        This class allows the user to manage the state when working with model
-        classes. The user only has control over independent state variables
+        A container that allows users to manage the internal hidden states of
+        model classes. Users only have control over independent state variables
         (i.e., soc, T_cell, hyst, eta_j). The :class:`~thevenin.Prediction`
         interface requires an instance of the `TransientState` each time a
         prediction step is made. You can optionally use instances of this class
@@ -42,13 +42,12 @@ class TransientState:
         eta_j : 1D np.array | None
             RC pair overpotentials [V].
 
-        See also
+        See Also
         --------
         Simulation : The model wrapper used for timeseries simulations.
         Prediction : The model wrapper used for step-by-step predictions.
 
         """
-
         self.soc = soc
         self.T_cell = T_cell
         self.hyst = hyst
@@ -77,7 +76,6 @@ class TransientState:
             A console-readable instance representation.
 
         """
-
         keys = self._repr_keys
         values = [getattr(self, k) for k in keys]
 
@@ -140,7 +138,6 @@ class Prediction(BaseModel):
         class instance.
 
         """
-
         self._check_RC_pairs()  # inherited from BaseModel
 
         ptr = {}
@@ -160,19 +157,18 @@ class Prediction(BaseModel):
 
         Parameters
         ----------
-        **kwargs : dict, optional
+        **options : dict, optional
             CVODESolver keyword arguments that span all steps. You can re-run
             this method between prediction steps if you need different settings
             per step.
 
-        See also
+        See Also
         --------
         ~thevenin.solvers.CVODESolver :
             The solver class, with documentation for most keyword arguments
             that you might want to adjust.
 
         """
-
         from .solvers import CVODESolver
 
         self._userdata = {}
@@ -202,7 +198,6 @@ class Prediction(BaseModel):
             Predicted state at the end of the time step.
 
         """
-
         if callable(current):
             self._userdata['current'] = current
         else:
@@ -258,7 +253,6 @@ class Prediction(BaseModel):
         RC pairs in the current model.
 
         """
-
         from ._simulation import Simulation
 
         sim = Simulation(self._get_params_dict)
@@ -281,7 +275,6 @@ class Prediction(BaseModel):
             Human-interpretable instance of the state variables array.
 
         """
-
         ptr = self._ptr.copy()
         _ = ptr.pop('size')
 
@@ -312,7 +305,6 @@ class Prediction(BaseModel):
             must be consistent with the model's 'num_RC_pairs' attribute.
 
         """
-
         if state.num_RC_pairs != self.num_RC_pairs:
             raise ValueError(f"{state.eta_j=} has an invalid length since"
                              f" num_RC_pairs={self.num_RC_pairs}.")
@@ -351,5 +343,4 @@ class Prediction(BaseModel):
         None.
 
         """
-
         svdot[:] = self._rhsfn(t, sv, userdata)

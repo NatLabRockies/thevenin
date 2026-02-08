@@ -22,6 +22,7 @@
 - `initial_state` was renamed to `state0` in `sim.pre()` ([#14](https://github.com/NatLabRockies/thevenin/pull/14))
 
 ### Chores
+- Switch linter over to `ruff`, enable `codecov` workflow, update README badges ([#31](https://github.com/NatLabRockies/thevenin/pull/31))
 - Make GitHub hyperlinks reference new org name `NREL` -> `NatLabRockies` ([#30](https://github.com/NatLabRockies/thevenin/pull/30))
 - Allow single backticks for sphinx inline code (`default_role = 'literal'`) ([#28](https://github.com/NatLabRockies/thevenin/pull/28))
 - Rebrand NREL to NLR, and include name change for Alliance as well ([#27](https://github.com/NatLabRockies/thevenin/pull/27))

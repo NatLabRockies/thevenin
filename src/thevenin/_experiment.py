@@ -25,7 +25,7 @@ class Experiment:
         **kwargs : dict, optional
             IDASolver keyword arguments that span all steps.
 
-        See also
+        See Also
         --------
         ~thevenin.solvers.IDASolver :
             The solver class, with documentation for most keyword arguments
@@ -34,7 +34,6 @@ class Experiment:
             The correct model interface to use with the `Experiment` class.
 
         """
-
         self._steps = []
         self._kwargs = []
         self._options = kwargs.copy()
@@ -49,7 +48,6 @@ class Experiment:
             A console-readable instance representation.
 
         """
-
         keys = ['num_steps', 'options']
         values = [self.num_steps, self._options]
 
@@ -161,7 +159,7 @@ class Experiment:
         ValueError
             'tspan' arrays must be monotonically increasing.
 
-        See also
+        See Also
         --------
         ~thevenin.solvers.IDASolver :
             The solver class, with documentation for most keyword arguments
@@ -188,7 +186,6 @@ class Experiment:
         these checks fail, a `ValueError` is raised.
 
         """
-
         _check_mode(mode)
         _check_limits(limits)
 
@@ -257,7 +254,6 @@ def _check_mode(mode: str) -> None:
         'mode' is invalid.
 
     """
-
     valid = ['current_A', 'current_C', 'voltage_V', 'power_W']
 
     if mode not in valid:
@@ -270,7 +266,7 @@ def _check_limits(limits: tuple[str, float]) -> None:
 
     Parameters
     ----------
-    limit : tuple[str, float]
+    limits : tuple[str, float]
         Stopping criteria and limiting value.
 
     Returns
@@ -285,7 +281,6 @@ def _check_limits(limits: tuple[str, float]) -> None:
         A 'limits' name is invalid.
 
     """
-
     valid = ['soc', 'temperature_K', 'current_A', 'current_C', 'voltage_V',
              'power_W', 'capacity_Ah', 'time_s', 'time_min', 'time_h']
 

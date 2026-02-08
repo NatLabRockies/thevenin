@@ -43,7 +43,6 @@ def get_colors(size: int, data: ndarray = None, norm: ndarray = None,
         'norm' length must equal 2.
 
     """
-
     import numpy as np
     import matplotlib as mpl
 

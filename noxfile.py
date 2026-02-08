@@ -9,8 +9,7 @@ nox.options.sessions = []
 
 @nox.session(name='cleanup', python=False)
 def run_cleanup(_) -> None:
-    """Use os/shutil to remove some files/directories"""
-
+    """Use os/shutil to remove some files/directories."""
     if os.path.exists('.coverage'):
         os.remove('.coverage')
 
@@ -21,34 +20,38 @@ def run_cleanup(_) -> None:
 
 
 @nox.session(name='linter', python=False)
-def run_flake8(session: nox.Session) -> None:
+def run_ruff(session: nox.Session) -> None:
     """
-    Run flake8 with the github config file
+    Run ruff to check for linting errors.
 
-    Use the optional 'format' argument to run autopep8 prior to the linter.
+    Use the optional 'format' or 'format-unsafe' arguments to run ruff with the
+    --fix or --unsafe-fixes option prior to the linter. You can also use 'stats'
+    to show a summary of the found errors rather than a full report.
 
     """
+    session.run('pip', 'install', '--upgrade', '--quiet', 'ruff')
 
-    session.run('pip', 'install', '--upgrade', '--quiet', 'flake8')
-    session.run('pip', 'install', '--upgrade', '--quiet', 'autopep8')
+    command = ['ruff', 'check']
+    if 'stats' in session.posargs:
+        command.append('--statistics')
 
     if 'format' in session.posargs:
-        session.run('autopep8', '.', '--in-place', '--recursive',
-                    '--global-config=.github/linters/.flake8')
+        command.append('--fix')
+    elif 'format-unsafe' in session.posargs:
+        command.extend(['--fix', '--unsafe-fixes'])
 
-    session.run('flake8', '--config=.github/linters/.flake8')
+    session.run(*command)
 
 
 @nox.session(name='codespell', python=False)
 def run_codespell(session: nox.Session) -> None:
     """
-    Run codespell with the github config file
+    Run codespell with the github config file.
 
     Use the optional 'write' argument to write the corrections directly into
     the files. Otherwise, you will only see a summary of the found errors.
 
     """
-
     session.run('pip', 'install', '--upgrade', '--quiet', 'codespell')
 
     command = ['codespell', '--config=.github/linters/.codespellrc']
@@ -61,13 +64,12 @@ def run_codespell(session: nox.Session) -> None:
 @nox.session(name='spellcheck', python=False)
 def run_spellcheck(session: nox.Session) -> None:
     """
-    Run codespell with docs files included
+    Run codespell with docs files included.
 
     Use the optional 'write' argument to write the corrections directly into
     the files. Otherwise, you will only see a summary of the found errors.
 
     """
-
     run_codespell(session)
 
     command = ['codespell', '--config=.github/linters/.codespellrc']
@@ -80,14 +82,13 @@ def run_spellcheck(session: nox.Session) -> None:
 @nox.session(name='tests', python=False)
 def run_pytest(session: nox.Session) -> None:
     """
-    Run pytest and generate test/coverage reports
+    Run pytest and generate test/coverage reports.
 
     Use the optional 'parallel' argument to run the tests in parallel. As just
     a flag, the number of workers will be determined automatically. Otherwise,
     you can specify the number of workers using an int, e.g., parallel=4.
 
     """
-
     package = importlib.util.find_spec('thevenin')
     coverage_folder = os.path.dirname(package.origin)
 
@@ -98,6 +99,8 @@ def run_pytest(session: nox.Session) -> None:
             'tests/',
         ]
     else:
+        os.makedirs('reports', exist_ok=True)
+
         command = [
             'pytest',
             '--cov=src/thevenin',
@@ -115,15 +118,13 @@ def run_pytest(session: nox.Session) -> None:
         elif arg.startswith('parallel'):
             command[1:1] = ['-n', 'auto']
 
+    os.environ['MPLBACKEND'] = 'Agg'
     session.run(*command)
-
-    run_cleanup(session)
 
 
 @nox.session(name='badges', python=False)
 def run_genbadge(session: nox.Session) -> None:
-    """Run genbadge to make test/coverage badges"""
-
+    """Run genbadge to make test/coverage badges."""
     session.run(
         'genbadge', 'coverage', '-l',
         '-i', 'reports/coverage.xml',
@@ -140,7 +141,7 @@ def run_genbadge(session: nox.Session) -> None:
 @nox.session(name='docs', python=False)
 def run_sphinx(session: nox.Session) -> None:
     """
-    Run spellcheck and then use sphinx to build docs
+    Run spellcheck and then use sphinx to build docs.
 
     Use the optional 'clean' argument to remove everything under the 'build'
     and 'source/api' folders prior to re-building the docs. This is important
@@ -148,7 +149,6 @@ def run_sphinx(session: nox.Session) -> None:
     are not showing new pages. In general, try without 'clean' first.
 
     """
-
     if 'clean' in session.posargs:
         os.chdir('docs')
         session.run('make', 'clean')
@@ -169,14 +169,13 @@ def run_sphinx(session: nox.Session) -> None:
 @nox.session(name='pre-commit', python=False)
 def run_pre_commit(session: nox.Session) -> None:
     """
-    Run all linters/tests and make new badges
+    Run all linters/tests and make new badges.
 
-    Order of sessions: flake8, spellcheck, pytest, genbadge. Using 'format' for
+    Order of sessions: ruff, spellcheck, pytest, genbadge. Using 'format' for
     linter, 'write' for spellcheck, and/or 'parallel' for pytest is permitted.
 
     """
-
-    run_flake8(session)
+    run_ruff(session)
     run_spellcheck(session)
 
     run_pytest(session)

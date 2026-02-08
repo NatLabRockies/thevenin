@@ -67,7 +67,6 @@ class Simulation(BaseModel):
         RC pairs in the current model.
 
         """
-
         from ._solutions import BaseSolution
         from ._prediction import TransientState
 
@@ -130,7 +129,7 @@ class Simulation(BaseModel):
             self._sv0 = sv0
             self._svdot0 = svdot0
 
-    def run_step(self, exp: Experiment, stepidx: int) -> StepSolution:
+    def run_step(self, expr: Experiment, stepidx: int) -> StepSolution:
         """
         Run a single experimental step.
 
@@ -154,7 +153,7 @@ class Simulation(BaseModel):
         steps afterward. If at any time you want to reset the internal hidden
         state back to a rested condition, use `pre()`.
 
-        See also
+        See Also
         --------
         Experiment : Build an experiment.
         StepSolution : Wrapper for a single-step solution.
@@ -168,12 +167,11 @@ class Simulation(BaseModel):
         decisions to be performed between experimental steps.
 
         """
-
         from .solvers import IDASolver
         from ._solutions import StepSolution
 
-        step = exp.steps[stepidx].copy()
-        kwargs = exp._kwargs[stepidx].copy()
+        step = expr.steps[stepidx].copy()
+        kwargs = expr._kwargs[stepidx].copy()
 
         if not callable(step['value']):
             value = step['value']
@@ -200,7 +198,7 @@ class Simulation(BaseModel):
 
         return soln
 
-    def run(self, exp: Experiment, reset_state: bool = True,
+    def run(self, expr: Experiment, reset_state: bool = True,
             t_shift: float = 1e-3) -> CycleSolution:
         """
         Run a full experiment.
@@ -234,18 +232,17 @@ class Simulation(BaseModel):
         can bypass this by using `reset_state=False`, which keeps the state
         at the end of the final experimental step.
 
-        See also
+        See Also
         --------
         Experiment : Build an experiment.
         CycleSolution : Wrapper for an all-steps solution.
 
         """
-
         from ._solutions import CycleSolution
 
         solns = []
-        for i in range(exp.num_steps):
-            solns.append(self.run_step(exp, i))
+        for i in range(expr.num_steps):
+            solns.append(self.run_step(expr, i))
 
         soln = CycleSolution(*solns, t_shift=t_shift)
 
@@ -267,7 +264,6 @@ class Simulation(BaseModel):
             properties as the current Simulation instance.
 
         """
-
         from ._prediction import Prediction
 
         return Prediction(self._get_params_dict)
@@ -299,7 +295,6 @@ class Simulation(BaseModel):
         None.
 
         """
-
         res[:] = self._mass_matrix*svdot - self._rhsfn(t, sv, userdata)
 
 
@@ -308,7 +303,7 @@ class _EventsFunction:
 
     def __init__(self, limits: tuple[str, float]) -> None:
         """
-        This class is a generalized event function callable.
+        A generalized event function callable.
 
         Parameters
         ----------
@@ -317,7 +312,6 @@ class _EventsFunction:
             limit names and values, e.g., ('time_h', 10., 'voltage_V', 4.2).
 
         """
-
         self.keys = limits[0::2]
         self.values = limits[1::2]
         self.size = len(self.keys)
@@ -352,7 +346,6 @@ class _EventsFunction:
         None.
 
         """
-
         for i, (key, value) in enumerate(zip(self.keys, self.values)):
             events[i] = userdata['events'][key] - value
 
@@ -380,7 +373,6 @@ def _setup_eventsfn(limits: tuple[str, float], kwargs: dict) -> None:
     None.
 
     """
-
     eventsfn = _EventsFunction(limits)
 
     kwargs['eventsfn'] = eventsfn
