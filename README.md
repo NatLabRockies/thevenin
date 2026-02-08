@@ -6,7 +6,7 @@
  # thevenin
 
 [![ci](https://github.com/NatLabRockies/thevenin/actions/workflows/ci.yml/badge.svg)](https://github.com/NatLabRockies/thevenin/actions/workflows/ci.yml) &nbsp;
-![coverage](https://github.com/NatLabRockies/thevenin/blob/main/images/coverage.svg?raw=true) &nbsp;
+[![codecov](https://codecov.io/gh/NatLabRockies/thevenin/graph/badge.svg?token=XM2VF9JVEW)](https://codecov.io/gh/NatLabRockies/thevenin) &nbsp;
 [![license](https://img.shields.io/badge/license-BSD--3-blue.svg)](https://github.com/NatLabRockies/thevenin/blob/main/LICENSE) &nbsp;
 [![downloads](https://static.pepy.tech/personalized-badge/thevenin?period=total&units=INTERNATIONAL_SYSTEM&left_color=GREY&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/thevenin) &nbsp;
 [![pypi](https://img.shields.io/pypi/v/thevenin)](https://pypi.org/project/thevenin)
