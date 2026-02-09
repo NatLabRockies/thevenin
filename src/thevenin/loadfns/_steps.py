@@ -15,7 +15,7 @@ class StepFunction:
                  ignore_nan: bool = False) -> None:
         """
         Construct a piecewise step function given the times at which step
-        changes occur and the values for each time interval. For example,.
+        changes occur and the values for each time interval.
 
         .. code-block:: python
 
