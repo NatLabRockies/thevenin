@@ -1,6 +1,5 @@
 import os
 import shutil
-import importlib
 
 import nox
 
@@ -89,13 +88,17 @@ def run_pytest(session: nox.Session) -> None:
     you can specify the number of workers using an int, e.g., parallel=4.
 
     """
-    package = importlib.util.find_spec('thevenin')
-    coverage_folder = os.path.dirname(package.origin)
-
     if 'no-reports' in session.posargs:
         command = [
             'pytest',
-            f'--cov={coverage_folder}',  # for editable or site-packages
+            '--cov=thevenin',
+            'tests/',
+        ]
+    elif 'codecov' in session.posargs:
+        command = [
+            'pytest',
+            '--cov=thevenin',
+            '--cov-report=xml',
             'tests/',
         ]
     else:
@@ -103,7 +106,7 @@ def run_pytest(session: nox.Session) -> None:
 
         command = [
             'pytest',
-            '--cov=src/thevenin',
+            '--cov=thevenin',
             '--cov-report=html:reports/htmlcov',
             '--cov-report=xml:reports/coverage.xml',
             '--junitxml=reports/junit.xml',
