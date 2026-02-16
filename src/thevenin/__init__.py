@@ -15,7 +15,7 @@ docstrings from a package, module, function, class, etc. You can also access
 the documentation by visiting the website, hosted on Read the Docs. The website
 includes search functionality and more detailed examples.
 
-"""  # noqa: D400, D415 (ignore missing punctuation on first line)
+"""
 
 # core package
 from ._experiment import Experiment
