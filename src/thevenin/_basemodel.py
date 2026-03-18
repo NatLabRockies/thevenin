@@ -423,17 +423,17 @@ def _yaml_reader(file: str) -> dict:
         An absolute or relative path to a '.yaml' file. The extension will
         be added if not included.
 
+    Returns
+    -------
+    data : dict
+        Data dictionary corresponding to the input file.
+
     Raises
     ------
     ValueError
         Invalid file. Only supports '.yaml' files.
     FileNotFoundError
         File does not exist.
-
-    Returns
-    -------
-    data : dict
-        Data dictionary corresponding to the input file.
 
     """
     _, extension = os.path.splitext(file)
