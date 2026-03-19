@@ -125,22 +125,6 @@ def run_pytest(session: nox.Session) -> None:
     session.run(*command)
 
 
-@nox.session(name='badges', python=False)
-def run_genbadge(session: nox.Session) -> None:
-    """Run genbadge to make test/coverage badges."""
-    session.run(
-        'genbadge', 'coverage', '-l',
-        '-i', 'reports/coverage.xml',
-        '-o', 'images/coverage.svg',
-    )
-
-    session.run(
-        'genbadge', 'tests', '-l',
-        '-i', 'reports/junit.xml',
-        '-o', 'images/tests.svg',
-    )
-
-
 @nox.session(name='docs', python=False)
 def run_sphinx(session: nox.Session) -> None:
     """
@@ -172,14 +156,13 @@ def run_sphinx(session: nox.Session) -> None:
 @nox.session(name='pre-commit', python=False)
 def run_pre_commit(session: nox.Session) -> None:
     """
-    Run all linters/tests and make new badges.
+    Run all linters and tests before committing.
 
-    Order of sessions: ruff, spellcheck, pytest, genbadge. Using 'format' for
-    linter, 'write' for spellcheck, and/or 'parallel' for pytest is permitted.
+    Order of sessions: ruff, spellcheck, pytest. All optional command arguments
+    (e.g., 'format' for linter, 'write' for spellcheck, and/or 'parallel' for
+    pytest) are still compatible.
 
     """
     run_ruff(session)
     run_spellcheck(session)
-
     run_pytest(session)
-    run_genbadge(session)

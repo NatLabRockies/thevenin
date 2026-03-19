@@ -94,7 +94,6 @@ dev = [
     "nox",
     "ruff",
     "codespell",
-    "genbadge[all]",
     "thevenin[docs,tests]",
 ]
 
