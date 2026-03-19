@@ -68,6 +68,9 @@ ignore = [
     "E201", "E202", "E226", "E241", "E731",
 ]
 
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*" = ["D"]
 
