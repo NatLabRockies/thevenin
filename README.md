@@ -6,10 +6,12 @@
  # thevenin
 
 [![ci](https://github.com/NatLabRockies/thevenin/actions/workflows/ci.yml/badge.svg)](https://github.com/NatLabRockies/thevenin/actions/workflows/ci.yml) &nbsp;
-[![codecov](https://codecov.io/gh/NatLabRockies/thevenin/graph/badge.svg?token=XM2VF9JVEW)](https://codecov.io/gh/NatLabRockies/thevenin) &nbsp;
 [![license](https://img.shields.io/badge/license-BSD--3-blue.svg)](https://github.com/NatLabRockies/thevenin/blob/main/LICENSE) &nbsp;
-[![downloads](https://static.pepy.tech/personalized-badge/thevenin?period=total&units=INTERNATIONAL_SYSTEM&left_color=GREY&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/thevenin) &nbsp;
-[![pypi](https://img.shields.io/pypi/v/thevenin)](https://pypi.org/project/thevenin)
+[![codecov](https://codecov.io/gh/NatLabRockies/thevenin/graph/badge.svg?token=XM2VF9JVEW)](https://codecov.io/gh/NatLabRockies/thevenin) <br>
+[![conda](https://img.shields.io/conda/vn/conda-forge/thevenin)](https://anaconda.org/channels/conda-forge/packages/thevenin/overview) &nbsp;
+[![conda-downloads](https://img.shields.io/conda/d/conda-forge/thevenin)](https://anaconda.org/channels/conda-forge/packages/thevenin/overview) &nbsp;
+[![pypi](https://img.shields.io/pypi/v/thevenin)](https://pypi.org/project/thevenin) &nbsp;
+[![downloads](https://static.pepy.tech/personalized-badge/thevenin?period=total&units=INTERNATIONAL_SYSTEM&left_color=GREY&right_color=BRIGHTGREEN&left_text=pypi|downloads)](https://pepy.tech/projects/thevenin) 
 
 ## Summary
 This package is a wrapper for the well-known Thevenin equivalent circuit model. The model is comprised of a single series resistor followed by any number of parallel RC pairs. Figure 1 below illustrates a circuit with 2 RC pairs; however, the model can be run with as few as zero, and as many as $N$.
