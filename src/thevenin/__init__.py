@@ -51,17 +51,3 @@ __all__ = [
     'plotutils',
     'solvers',
 ]
-
-
-class Model(Simulation):  # pragma: no cover
-    def __init__(self, params='params.yaml'):
-        from warnings import warn
-
-        warn(
-            "The 'Model' class has been renamed 'Simulation'. In a future"
-            " release 'Model' will be deprecated.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-
-        super().__init__(params)
