@@ -30,8 +30,8 @@ classifiers = [
     "Programming Language :: Python :: 3.15",
 ]
 dependencies = [
-    "numpy",
     "scipy",
+    "numpy>=2.0",
     "matplotlib",
     "ruamel.yaml",
     "scikit-sundae>=1.1.0",
