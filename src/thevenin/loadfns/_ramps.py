@@ -6,9 +6,9 @@ import numpy as np
 class Ramp:
     """Linearly ramping load."""
 
-    __slots__ = ('_m', '_b',)
+    __slots__ = ('_m', '_b')
 
-    def __init__(self, m: float, b: float = 0.) -> None:
+    def __init__(self, m: float, b: float = 0.0) -> None:
         """
         A load profile that continuously ramps with slope m.
 
@@ -23,20 +23,25 @@ class Ramp:
         self._m = m
         self._b = b
 
-    def __repr__(self) -> str:  # pragma: no cover
+    def __repr__(self) -> str:
         return f"Ramp(m={self._m:.2e}, b={self._b:.2e})"
 
     def __call__(self, t: float) -> float:
-        return self._m*t + self._b
+        return self._m * t + self._b
 
 
 class Ramp2Constant:
     """Ramp to a constant load."""
 
-    __slots__ = ('_m', '_b', '_step', '_sharpness',)
+    __slots__ = ('_m', '_b', '_step', '_sharpness')
 
-    def __init__(self, m: float, step: float, b: float = 0.,
-                 sharpness: float = 100.) -> None:
+    def __init__(
+        self,
+        m: float,
+        step: float,
+        b: float = 0.0,
+        sharpness: float = 100.0,
+    ) -> None:
         """
         A load profile that ramps with slope m unil the constant step value
         is reached, after which, the load is equal to the step constant. A
@@ -67,11 +72,11 @@ class Ramp2Constant:
             'sharpness' must be strictly positive.
 
         """
-        if m == 0. or abs(m) == np.inf:
+        if m == 0.0 or abs(m) == np.inf:
             raise ValueError("m = 0. and m = inf are invalid slopes.")
-        elif m > 0. and b >= step:
+        elif m > 0.0 and b >= step:
             raise ValueError("Cannot reach step with m > 0. and b >= step.")
-        elif m < 0. and b <= step:
+        elif m < 0.0 and b <= step:
             raise ValueError("Cannot reach step with m < 0. and b <= step.")
 
         if sharpness <= 0:
@@ -80,9 +85,9 @@ class Ramp2Constant:
         self._m = m
         self._b = b
         self._step = step
-        self._sharpness = np.sign(m)*sharpness
+        self._sharpness = np.sign(m) * sharpness
 
-    def __repr__(self) -> str:  # pragma: no cover
+    def __repr__(self) -> str:
 
         data = {'m': self._m, 'b': self._b, 'step': self._step}
 
@@ -92,9 +97,9 @@ class Ramp2Constant:
 
     def __call__(self, t: float) -> float:
 
-        linear = self._m*t + self._b
+        linear = self._m * t + self._b
 
-        z = self._sharpness*(linear - self._step)
-        sigmoid = 1. / (1. + np.exp(-np.clip(z, -700, None)))
+        z = self._sharpness * (linear - self._step)
+        sigmoid = 1.0 / (1.0 + np.exp(-np.clip(z, -700, None)))
 
-        return (1. - sigmoid)*linear + sigmoid*self._step
+        return (1.0 - sigmoid) * linear + sigmoid * self._step

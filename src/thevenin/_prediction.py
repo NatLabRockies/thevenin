@@ -1,11 +1,12 @@
 from __future__ import annotations
-from typing import Callable, TypeVar, TYPE_CHECKING
+
+from typing import TYPE_CHECKING, Callable, TypeVar
 
 import numpy as np
 
 from thevenin._basemodel import BaseModel
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from ._simulation import Simulation
     from ._solutions import BaseSolution
 
@@ -15,8 +16,13 @@ if TYPE_CHECKING:  # pragma: no cover
 class TransientState:
     """Transient state for predictions."""
 
-    def __init__(self, soc: float, T_cell: float, hyst: float,
-                 eta_j: np.ndarray | None) -> None:
+    def __init__(
+        self,
+        soc: float,
+        T_cell: float,
+        hyst: float,
+        eta_j: np.ndarray | None,
+    ) -> None:
         """
         A container that allows users to manage the internal hidden states of
         model classes. Users only have control over independent state variables
@@ -66,7 +72,7 @@ class TransientState:
             'eta_j',
         ]
 
-    def __repr__(self) -> str:  # pragma: no cover
+    def __repr__(self) -> str:
         """
         Return a readable repr string.
 
@@ -175,8 +181,12 @@ class Prediction(BaseModel):
         options = {'userdata': self._userdata, **options}
         self._solver = CVODESolver(self._svdot, **options)
 
-    def take_step(self, state: TransientState, current: float | Callable,
-                  delta_t: float) -> TransientState:
+    def take_step(
+        self,
+        state: TransientState,
+        current: float | Callable,
+        delta_t: float,
+    ) -> TransientState:
         """
         Take a step forward in time to predict the new state and voltage given
         a starting state, demand current, and time step.
@@ -205,7 +215,7 @@ class Prediction(BaseModel):
 
         sv0 = self._to_array(state)
 
-        _ = self._solver.init_step(0., sv0)
+        _ = self._solver.init_step(0.0, sv0)
         soln = self._solver.step(delta_t)
 
         # state prediction
@@ -216,14 +226,15 @@ class Prediction(BaseModel):
         R0 = self.R0(state.soc, state.T_cell)
 
         current = self._userdata['current'](soln.t)
-        voltage = ocv + state.hyst - np.sum(state.eta_j) - current*R0
+        voltage = ocv + state.hyst - np.sum(state.eta_j) - current * R0
 
         state._set_voltage(voltage)
 
         return state
 
     def to_simulation(
-        self, state0: bool | Solution | TransientState = True,
+        self,
+        state0: bool | Solution | TransientState = True,
     ) -> Simulation:
         """
         Generate a `Simulation` class instance with the same properties as
@@ -280,7 +291,7 @@ class Prediction(BaseModel):
 
         state = {}
         for k, v in ptr.items():
-            state[k] = array[v] * (self._T_ref if k == 'T_cell' else 1.)
+            state[k] = array[v] * (self._T_ref if k == 'T_cell' else 1.0)
 
         return TransientState(**state)
 
@@ -306,20 +317,27 @@ class Prediction(BaseModel):
 
         """
         if state.num_RC_pairs != self.num_RC_pairs:
-            raise ValueError(f"{state.eta_j=} has an invalid length since"
-                             f" num_RC_pairs={self.num_RC_pairs}.")
+            raise ValueError(
+                f"{state.eta_j=} has an invalid length since"
+                f" num_RC_pairs={self.num_RC_pairs}."
+            )
 
         ptr = self._ptr.copy()
         size = ptr.pop('size')
 
         sv = np.zeros(size)
         for k, v in ptr.items():
-            sv[v] = getattr(state, k) / (self._T_ref if k == 'T_cell' else 1.)
+            sv[v] = getattr(state, k) / (self._T_ref if k == 'T_cell' else 1.0)
 
         return sv
 
-    def _svdot(self, t: float, sv: np.ndarray, svdot: np.ndarray,
-               userdata: dict) -> None:
+    def _svdot(
+        self,
+        t: float,
+        sv: np.ndarray,
+        svdot: np.ndarray,
+        userdata: dict,
+    ) -> None:
         """
         Solver-structured right-hand-side.
 

@@ -1,22 +1,20 @@
 from __future__ import annotations
-from typing import Iterable, Callable, TypeVar, TYPE_CHECKING
-
-import textwrap
-from copy import deepcopy
 
 import atexit
+import textwrap
+
+from copy import deepcopy
+from typing import TYPE_CHECKING, Iterable, Callable, TypeVar
+
 import numpy as np
 import matplotlib.pyplot as plt
 
 from .solvers import IDAResult
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from ._simulation import Simulation
 
     Solution = TypeVar('Solution', bound='BaseSolution')
-
-if not hasattr(np, 'concat'):  # pragma: no cover
-    np.concat = np.concatenate
 
 
 class ExitHandler:
@@ -52,7 +50,7 @@ class BaseSolution(IDAResult):
         """
         self.vars = {}
 
-    def __repr__(self) -> str:  # pragma: no cover
+    def __repr__(self) -> str:
         """
         Return a readable repr string.
 
@@ -62,7 +60,7 @@ class BaseSolution(IDAResult):
             A console-readable instance representation.
 
         """
-        classname = self.__class__.__name__
+        classname = type(self).__name__
 
         def wrap_string(label: str, value: list, width: int):
             if isinstance(value, Iterable):
@@ -70,7 +68,7 @@ class BaseSolution(IDAResult):
             else:
                 value = [value]
 
-            indent = ' '*(len(label) + 1)
+            indent = ' ' * (len(label) + 1)
 
             if classname == 'StepSolution' and len(value) == 1:
                 text = label + f"{value[0]!r}"
@@ -154,7 +152,7 @@ class BaseSolution(IDAResult):
         time = self.t
 
         soc = self.y[:, ptr['soc']]
-        T_cell = self.y[:, ptr['T_cell']]*sim._T_ref
+        T_cell = self.y[:, ptr['T_cell']] * sim._T_ref
         hyst = self.y[:, ptr['hyst']]
         eta_j = self.y[:, ptr['eta_j']]
         voltage = self.y[:, ptr['V_cell']]
@@ -169,7 +167,6 @@ class BaseSolution(IDAResult):
             assert R0.shape == soc.shape
 
         except (TypeError, AssertionError):
-
             ocv = np.empty_like(soc)
             R0 = np.empty_like(soc)
             for i in range(soc.size):
@@ -180,8 +177,8 @@ class BaseSolution(IDAResult):
 
         # stored time
         self.vars['time_s'] = time
-        self.vars['time_min'] = time / 60.
-        self.vars['time_h'] = time / 3600.
+        self.vars['time_min'] = time / 60.0
+        self.vars['time_h'] = time / 3600.0
 
         # from state variables
         self.vars['soc'] = soc
@@ -191,8 +188,8 @@ class BaseSolution(IDAResult):
 
         # post-processed variables
         self.vars['current_A'] = current
-        self.vars['power_W'] = current*voltage
-        self.vars['eta0_V'] = current*R0
+        self.vars['power_W'] = current * voltage
+        self.vars['eta0_V'] = current * R0
 
         for j, eta in enumerate(eta_j.T, start=1):
             self.vars['eta' + str(j) + '_V'] = eta
@@ -201,8 +198,12 @@ class BaseSolution(IDAResult):
 class StepSolution(BaseSolution):
     """Single-step solution."""
 
-    def __init__(self, sim: Simulation, ida_soln: IDAResult,
-                 timer: float) -> None:
+    def __init__(
+        self,
+        sim: Simulation,
+        ida_soln: IDAResult,
+        timer: float,
+    ) -> None:
         """
         A solution instance for a single experimental step.
 
@@ -376,7 +377,7 @@ class CycleSolution(BaseSolution):
         if isinstance(idx, int):
             return deepcopy(self._solns[idx])
         elif isinstance(idx, (tuple, list)):
-            solns = self._solns[idx[0]:idx[1] + 1]
+            solns = self._solns[idx[0] : idx[1] + 1]
             return CycleSolution(*solns)
 
     def append_soln(self, soln: Solution, t_shift: float = 1e-3) -> None:
@@ -426,8 +427,10 @@ class CycleSolution(BaseSolution):
             raise TypeError("'soln' input must be StepSolution, CycleSolution.")
 
         if self._sim.num_RC_pairs != soln._sim.num_RC_pairs:
-            raise ValueError("'soln' input is incompatible because it came"
-                             " from a simulation with different num_RC_pairs.")
+            raise ValueError(
+                "'soln' input is incompatible because it came"
+                " from a simulation with different num_RC_pairs."
+            )
 
         soln = deepcopy(soln)
 

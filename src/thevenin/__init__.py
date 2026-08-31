@@ -23,7 +23,10 @@ from ._simulation import Simulation
 from ._prediction import TransientState, Prediction
 from ._solutions import StepSolution, CycleSolution
 from ._templates import (
-    download_templates, list_templates, load_templates, print_templates,
+    download_templates,
+    list_templates,
+    load_templates,
+    print_templates,
 )
 
 # submodules
@@ -48,15 +51,3 @@ __all__ = [
     'plotutils',
     'solvers',
 ]
-
-
-class Model(Simulation):  # pragma: no cover
-
-    def __init__(self, params='params.yaml'):
-        from warnings import warn
-
-        warn("The 'Model' class has been renamed 'Simulation'. In a future"
-             " release 'Model' will be deprecated.", DeprecationWarning,
-             stacklevel=2)
-
-        super().__init__(params)

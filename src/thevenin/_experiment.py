@@ -9,7 +9,7 @@ import numpy as np
 class Experiment:
     """Experiment builder."""
 
-    __slots__ = ('_steps', '_kwargs', '_options',)
+    __slots__ = ('_steps', '_kwargs', '_options')
 
     def __init__(self, **kwargs) -> None:
         """
@@ -38,7 +38,7 @@ class Experiment:
         self._kwargs = []
         self._options = kwargs.copy()
 
-    def __repr__(self) -> str:  # pragma: no cover
+    def __repr__(self) -> str:
         """
         Return a readable repr string.
 
@@ -59,28 +59,12 @@ class Experiment:
 
     @property
     def steps(self) -> list[dict]:
-        """
-        Return steps list.
-
-        Returns
-        -------
-        steps : list[dict]
-            List of the step dictionaries.
-
-        """
+        """The list of steps."""
         return self._steps
 
     @property
     def num_steps(self) -> int:
-        """
-        Return number of steps.
-
-        Returns
-        -------
-        num_steps : int
-            Number of steps.
-
-        """
+        """The number of steps."""
         return len(self._steps)
 
     def print_steps(self) -> None:
@@ -94,14 +78,20 @@ class Experiment:
         """
         with np.printoptions(threshold=6, edgeitems=2):
             for i, step in enumerate(self.steps):
-                print(f"\nStep {i}\n" + "-"*20)
+                print(f"\nStep {i}\n" + "-" * 20)
                 for key, value in step.items():
                     print(f"{key:<7} : {value!r}")
 
                 print(f"options : {self._kwargs[i]!r}")
 
-    def add_step(self, mode: str, value: float | Callable, tspan: tuple,
-                 limits: tuple[str, float] = None, **kwargs) -> None:
+    def add_step(
+        self,
+        mode: str,
+        value: float | Callable,
+        tspan: tuple,
+        limits: tuple[str, float] = None,
+        **kwargs,
+    ) -> None:
         """
         Add a step to the experiment.
 
@@ -192,20 +182,21 @@ class Experiment:
         mode, units = mode.split('_')
 
         if isinstance(tspan, Real):
-            tspan = np.array([0., tspan], dtype=float)
+            tspan = np.array([0.0, tspan], dtype=float)
 
         elif isinstance(tspan, tuple):
-
             if not len(tspan) == 2:
                 raise ValueError("'tspan' tuple must be length 2.")
             elif not all(isinstance(val, Real) for val in tspan):
                 raise TypeError("'tspan' tuple values must be type float.")
             elif tspan[1] >= tspan[0]:
-                raise ValueError("'tspan[1]' must be less than 'tspan[0]'"
-                                 " when given a tuple.")
+                raise ValueError(
+                    "'tspan[1]' must be less than 'tspan[0]'"
+                    " when given a tuple."
+                )
 
             tmax, dt = tspan
-            tspan = np.arange(0., tmax, dt, dtype=float)
+            tspan = np.arange(0.0, tmax, dt, dtype=float)
 
             if tspan[-1] != tmax:
                 tspan = np.hstack([tspan, tmax])
@@ -217,11 +208,11 @@ class Experiment:
 
         if tspan.ndim != 1:
             raise ValueError("'tspan' must be one-dimensional.")
-        elif tspan[0] != 0.:
+        elif tspan[0] != 0.0:
             raise ValueError("'tspan[0]' must be zero.")
         elif tspan.size < 2:
             raise ValueError("'tspan' array length must be at least two.")
-        elif not all(np.diff(tspan) > 0.):
+        elif not all(np.diff(tspan) > 0.0):
             raise ValueError("'tspan' must be monotonically increasing.")
 
         step = {}
@@ -281,22 +272,33 @@ def _check_limits(limits: tuple[str, float]) -> None:
         A 'limits' name is invalid.
 
     """
-    valid = ['soc', 'temperature_K', 'current_A', 'current_C', 'voltage_V',
-             'power_W', 'capacity_Ah', 'time_s', 'time_min', 'time_h']
+    valid = [
+        'soc',
+        'temperature_K',
+        'current_A',
+        'current_C',
+        'voltage_V',
+        'power_W',
+        'capacity_Ah',
+        'time_s',
+        'time_min',
+        'time_h',
+    ]
 
     if limits is None:
         pass
     elif len(limits) % 2 != 0:
         raise ValueError("'limits' length must be even.")
     else:
-
         for i in range(len(limits) // 2):
-            name = limits[2*i]
-            value = limits[2*i + 1]
+            name = limits[2 * i]
+            value = limits[2 * i + 1]
 
             if name not in valid:
-                raise ValueError(f"The limit name '{name}' is invalid; valid"
-                                 f" values are {valid}.")
+                raise ValueError(
+                    f"The limit name '{name}' is invalid; valid"
+                    f" values are {valid}."
+                )
 
             elif not isinstance(value, (int, float)):
                 raise TypeError(f"Limit '{name}' value must be type float.")

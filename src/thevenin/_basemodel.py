@@ -9,85 +9,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from ruamel.yaml import YAML, add_constructor, SafeConstructor
-
-
-def calculated_current(voltage, ocv, hyst, eta_j, R0) -> float | np.ndarray:
-    """
-    Calculate the current [A].
-
-    Inputs must be consistent with one another. For example, to calculate the
-    current at a single time all values must be a float except eta_j which is
-    a 1D array at a given time step. To return the current across all times,
-    use 1D arrays for all inputs except eta_j, which then must be a 2D array
-    with rows corresponding to times and columns to each RC pair. eta_j can
-    be empty if there are no RC pairs, but must still be 1D or 2D as required.
-
-    Parameters
-    ----------
-    voltage : float | 1D np.array
-        Cell voltage at a single or multiple times [V].
-    ocv : float | 1D np.array
-        Open-circuit voltage at a single or multiple times [V].
-    hyst : float | 1D np.array
-        Hysteresis voltage at a single or multiple times [V].
-    eta_j : 1D or 2D np.array
-        RC-pair overpotentials at a single (1D) or multiple (2D) times [V]. If
-        2D the rows correspond to time indices and columns to each RC pair.
-    R0 : float | 1D np.array
-        Series resistance values at a single or multiple times [Ohm].
-
-    Returns
-    -------
-    current : float | 1D np.array
-        Calculated current at a single or multiple times [A].
-
-    """
-    if eta_j.ndim == 1:
-        return -(voltage - ocv - hyst + np.sum(eta_j)) / R0
-    elif eta_j.ndim == 2:
-        return -(voltage - ocv - hyst + np.sum(eta_j, axis=1)) / R0
-    else:
-        raise ValueError("Dimension error in calculating current.")
-
-
-def calculated_voltage(current, ocv, hyst, eta_j, R0) -> float | np.ndarray:
-    """
-    Calculate the voltage [V].
-
-    Inputs must be consistent with one another. For example, to calculate the
-    voltage at a single time all values must be a float except eta_j which is
-    a 1D array at a given time step. To return the voltage across all times,
-    use 1D arrays for all inputs except eta_j, which then must be a 2D array
-    with rows corresponding to times and columns to each RC pair. eta_j can
-    be empty if there are no RC pairs, but must still be 1D or 2D as required.
-
-    Parameters
-    ----------
-    current : float | 1D np.array
-        Current at a single or multiple times [A].
-    ocv : float | 1D np.array
-        Open-circuit voltage at a single or multiple times [V].
-    hyst : float | 1D np.array
-        Hysteresis voltage at a single or multiple times [V].
-    eta_j : 1D or 2D np.array
-        RC-pair overpotentials at a single (1D) or multiple (2D) times [V]. If
-        2D the rows correspond to time indices and columns to each RC pair.
-    R0 : float | 1D np.array
-        Series resistance values at a single or multiple times [Ohm].
-
-    Returns
-    -------
-    voltage : float | 1D np.array
-        Calculated voltage at a single or multiple times [V].
-
-    """
-    if eta_j.ndim == 1:
-        return ocv + hyst - np.sum(eta_j) - current*R0
-    elif eta_j.ndim == 2:
-        return ocv + hyst - np.sum(eta_j, axis=1) - current*R0
-    else:
-        raise ValueError("Dimension error in calculating voltage.")
+from ruamel.yaml import YAML, SafeConstructor, add_constructor
 
 
 class BaseModel(ABC):
@@ -193,7 +115,6 @@ class BaseModel(ABC):
         self.R0 = params.pop('R0')
 
         for j in range(1, self.num_RC_pairs + 1):
-
             assert 'R' + str(j) in params, f"'params' is missing R{str(j)}"
             assert 'C' + str(j) in params, f"'params' is missing C{str(j)}"
 
@@ -204,14 +125,16 @@ class BaseModel(ABC):
 
         if len(params) != 0:
             extra_keys = list(params.keys())
-            raise ValueError("'params' contains invalid and/or excess"
-                             f" key/value pairs: {extra_keys=}")
+            raise ValueError(
+                "'params' contains invalid and/or excess"
+                f" key/value pairs: {extra_keys=}"
+            )
 
         self._T_ref = self.T_inf
 
         self.pre()
 
-    def __repr__(self) -> str:  # pragma: no cover
+    def __repr__(self) -> str:
         """
         Return a readable repr string.
 
@@ -231,25 +154,17 @@ class BaseModel(ABC):
 
     @property
     def classname(self) -> str:
-        """Return the name of the class."""
-        return self.__class__.__name__
+        """The name of the class."""
+        return type(self).__name__
 
     @property
     def num_RC_pairs(self) -> int:
-        """Return the number of RC pairs."""
+        """The number of RC pairs."""
         return self._num_RC_pairs
 
     @property
-    def _classname(self) -> str:
-        """Use until 'Model' is deprecated to control flags in _rhsfn."""
-        if self.classname == 'Model':
-            return 'Simulation'
-
-        return self.classname
-
-    @property
     def _get_params_dict(self) -> dict:
-        """Return the params dictionary needed to initialize a new instance."""
+        """The parameters dictionary needed to initialize a new instance."""
         params = {}
         for k in self._repr_keys:
             params[k] = getattr(self, k)
@@ -278,15 +193,15 @@ class BaseModel(ABC):
             if not hasattr(self, 'C' + str(j)):
                 missing_attrs.append('C' + str(j))
 
-        classname = self.classname
         if missing_attrs:
-            raise AttributeError(f"'{classname}' missing attrs {missing_attrs}"
-                                 " to be consistent with 'num_RC_pairs'.")
+            raise AttributeError(
+                f"'{self.classname}' missing attrs {missing_attrs}"
+                " to be consistent with 'num_RC_pairs'."
+            )
 
         extra_attrs = []
         pattern = re.compile(r"^[RC](\d+)")
         for attr in list(self.__dict__.keys()):
-
             matches = pattern.match(attr)
             if matches is None:
                 pass
@@ -294,8 +209,10 @@ class BaseModel(ABC):
                 extra_attrs.append(attr)
 
         if extra_attrs:
-            short_warn(f"Extra RC attributes {extra_attrs} are present, beyond"
-                       " what was expected based on 'num_RC_pairs'.")
+            _short_warn(
+                f"Extra RC attributes {extra_attrs} are present, beyond"
+                " what was expected based on 'num_RC_pairs'."
+            )
 
     def _rhsfn(self, t: float, sv: np.ndarray, userdata: dict) -> np.ndarray:
         """
@@ -329,7 +246,7 @@ class BaseModel(ABC):
 
         # state
         soc = sv[ptr['soc']]
-        T_cell = sv[ptr['T_cell']]*self._T_ref
+        T_cell = sv[ptr['T_cell']] * self._T_ref
         hyst = sv[ptr['hyst']]
         eta_j = sv[ptr['eta_j']]
 
@@ -338,44 +255,45 @@ class BaseModel(ABC):
         R0 = self.R0(soc, T_cell)
 
         # dependent parameters
-        Q_inv = 1. / (3600. * self.capacity)
-        alpha_inv = 1. / (self.mass * self.Cp * self._T_ref)
+        Q_inv = 1.0 / (3600.0 * self.capacity)
+        alpha_inv = 1.0 / (self.mass * self.Cp * self._T_ref)
 
         # current, voltage, and power - different for Simulation/Prediction
-        if self._classname == 'Simulation':
+        if self.classname == 'Simulation':
             voltage = sv[ptr['V_cell']]
             current = calculated_current(voltage, ocv, hyst, eta_j, R0)
 
-        elif self._classname == 'Prediction':
+        elif self.classname == 'Prediction':
             current = userdata['current'](t)
             voltage = calculated_voltage(current, ocv, hyst, eta_j, R0)
 
-        power = current*voltage
+        power = current * voltage
 
         # state of charge (differential)
-        ce = 1. if current >= 0. else self.ce
-        rhs[ptr['soc']] = -ce*current*Q_inv
+        ce = 1.0 if current >= 0.0 else self.ce
+        rhs[ptr['soc']] = -ce * current * Q_inv
 
         # temperature (differential)
-        Q_gen = current*(ocv + hyst - voltage)
-        Q_conv = self.h_therm*self.A_therm*(self.T_inf - T_cell)
+        Q_gen = current * (ocv + hyst - voltage)
+        Q_conv = self.h_therm * self.A_therm * (self.T_inf - T_cell)
 
-        rhs[ptr['T_cell']] = alpha_inv * (Q_gen + Q_conv) \
-                           * (1 - self.isothermal)
+        rhs[ptr['T_cell']] = (
+            alpha_inv * (Q_gen + Q_conv) * (1 - self.isothermal)
+        )
 
         # hysteresis (differential)
         direction = -np.sign(current)
-        coeff = np.abs(ce*current*self.gamma*Q_inv)
-        rhs[ptr['hyst']] = coeff*(direction*self.M_hyst(soc) - hyst)
+        coeff = np.abs(ce * current * self.gamma * Q_inv)
+        rhs[ptr['hyst']] = coeff * (direction * self.M_hyst(soc) - hyst)
 
         # RC overpotentials (differential)
         for j, pj in enumerate(ptr['eta_j'], start=1):
             Rj = getattr(self, 'R' + str(j))(soc, T_cell)
             Cj = getattr(self, 'C' + str(j))(soc, T_cell)
-            rhs[pj] = -sv[pj] / (Rj*Cj) + current / Cj
+            rhs[pj] = -sv[pj] / (Rj * Cj) + current / Cj
 
         # cell voltage (algebraic) - only if using Simulation, not Prediction
-        if self._classname == 'Simulation':
+        if self.classname == 'Simulation':
             mode = userdata['mode']
             units = userdata['units']
             value = userdata['value']
@@ -383,7 +301,7 @@ class BaseModel(ABC):
             if mode == 'current' and units == 'A':
                 rhs[ptr['V_cell']] = current - value(t)
             elif mode == 'current' and units == 'C':
-                rhs[ptr['V_cell']] = current - self.capacity*value(t)
+                rhs[ptr['V_cell']] = current - self.capacity * value(t)
             elif mode == 'voltage':
                 rhs[ptr['V_cell']] = voltage - value(t)
             elif mode == 'power':
@@ -399,15 +317,93 @@ class BaseModel(ABC):
                 'current_C': current / self.capacity,
                 'voltage_V': voltage,
                 'power_W': power,
-                'capacity_Ah': soc*self.capacity,
+                'capacity_Ah': soc * self.capacity,
                 'time_s': total_time,
-                'time_min': total_time / 60.,
-                'time_h': total_time / 3600.,
+                'time_min': total_time / 60.0,
+                'time_h': total_time / 3600.0,
             }
 
             userdata['events'] = events
 
         return rhs
+
+
+def calculated_current(voltage, ocv, hyst, eta_j, R0) -> float | np.ndarray:
+    """
+    Calculate the current [A].
+
+    Inputs must be consistent with one another. For example, to calculate the
+    current at a single time all values must be a float except eta_j which is
+    a 1D array at a given time step. To return the current across all times,
+    use 1D arrays for all inputs except eta_j, which then must be a 2D array
+    with rows corresponding to times and columns to each RC pair. eta_j can
+    be empty if there are no RC pairs, but must still be 1D or 2D as required.
+
+    Parameters
+    ----------
+    voltage : float | 1D np.array
+        Cell voltage at a single or multiple times [V].
+    ocv : float | 1D np.array
+        Open-circuit voltage at a single or multiple times [V].
+    hyst : float | 1D np.array
+        Hysteresis voltage at a single or multiple times [V].
+    eta_j : 1D or 2D np.array
+        RC-pair overpotentials at a single (1D) or multiple (2D) times [V]. If
+        2D the rows correspond to time indices and columns to each RC pair.
+    R0 : float | 1D np.array
+        Series resistance values at a single or multiple times [Ohm].
+
+    Returns
+    -------
+    current : float | 1D np.array
+        Calculated current at a single or multiple times [A].
+
+    """
+    if eta_j.ndim == 1:
+        return -(voltage - ocv - hyst + np.sum(eta_j)) / R0
+    elif eta_j.ndim == 2:
+        return -(voltage - ocv - hyst + np.sum(eta_j, axis=1)) / R0
+    else:
+        raise ValueError("Dimension error in calculating current.")
+
+
+def calculated_voltage(current, ocv, hyst, eta_j, R0) -> float | np.ndarray:
+    """
+    Calculate the voltage [V].
+
+    Inputs must be consistent with one another. For example, to calculate the
+    voltage at a single time all values must be a float except eta_j which is
+    a 1D array at a given time step. To return the voltage across all times,
+    use 1D arrays for all inputs except eta_j, which then must be a 2D array
+    with rows corresponding to times and columns to each RC pair. eta_j can
+    be empty if there are no RC pairs, but must still be 1D or 2D as required.
+
+    Parameters
+    ----------
+    current : float | 1D np.array
+        Current at a single or multiple times [A].
+    ocv : float | 1D np.array
+        Open-circuit voltage at a single or multiple times [V].
+    hyst : float | 1D np.array
+        Hysteresis voltage at a single or multiple times [V].
+    eta_j : 1D or 2D np.array
+        RC-pair overpotentials at a single (1D) or multiple (2D) times [V]. If
+        2D the rows correspond to time indices and columns to each RC pair.
+    R0 : float | 1D np.array
+        Series resistance values at a single or multiple times [Ohm].
+
+    Returns
+    -------
+    voltage : float | 1D np.array
+        Calculated voltage at a single or multiple times [V].
+
+    """
+    if eta_j.ndim == 1:
+        return ocv + hyst - np.sum(eta_j) - current * R0
+    elif eta_j.ndim == 2:
+        return ocv + hyst - np.sum(eta_j, axis=1) - current * R0
+    else:
+        raise ValueError("Dimension error in calculating voltage.")
 
 
 def _yaml_reader(file: str) -> dict:
@@ -447,7 +443,7 @@ def _yaml_reader(file: str) -> dict:
     resources = pathlib.Path(here).joinpath('_resources')
 
     if file in os.listdir(resources):
-        short_warn(f"Using the default parameter file '{file}'.")
+        _short_warn(f"Using the default parameter file '{file}'.")
         file = resources.joinpath(file)
 
     def eval_constructor(loader, node):
@@ -466,16 +462,16 @@ def _yaml_reader(file: str) -> dict:
     return data
 
 
-def formatwarning(message, category, filename, lineno, line=None):
+def _formatwarning(message, category, filename, lineno, line=None):
     """Shortened warning format - used for parameter/pre warnings."""
     return f"\n[thevenin {category.__name__}] {message}\n\n"
 
 
-def short_warn(message, category=UserWarning, stacklevel=1, source=None):
-    """Print a warning with the short format from `formatwarning`."""
+def _short_warn(message, category=UserWarning, stacklevel=1, source=None):
+    """Print a warning with the short format from `_formatwarning`."""
     original_format = warnings.formatwarning
 
-    warnings.formatwarning = formatwarning
+    warnings.formatwarning = _formatwarning
     warnings.warn_explicit(message, category, filename='None', lineno=0)
 
     warnings.formatwarning = original_format

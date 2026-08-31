@@ -1,23 +1,8 @@
 import warnings
 
 import pytest
-import thevenin as thev
-
 import numpy as np
 import numpy.testing as npt
-
-
-def test_model_deprecation():
-
-    with pytest.warns(DeprecationWarning):
-        warnings.simplefilter('ignore', UserWarning)
-        model = thev.Model()
-
-    expr = thev.Experiment()
-    expr.add_step('current_C', 0., (300., 1.))
-
-    soln = model.run(expr)
-    assert soln.success
 
 
 def test_no_basemodel_instances():
@@ -30,14 +15,14 @@ def test_no_basemodel_instances():
 def test_calculated_current():
     from thevenin._basemodel import calculated_current
 
-    voltage = 4.
-    ocv = 4.
-    hyst = 0.
-    R0 = 1.
+    voltage = 4.0
+    ocv = 4.0
+    hyst = 0.0
+    R0 = 1.0
 
     # with 1D eta_j
     eta_j = np.zeros(3)
-    assert calculated_current(voltage, ocv, hyst, eta_j, R0) == 0.
+    assert calculated_current(voltage, ocv, hyst, eta_j, R0) == 0.0
 
     # with 2D eta_j
     eta_j = np.zeros((500, 3))
@@ -55,10 +40,10 @@ def test_calculated_current():
 def test_calculated_voltage():
     from thevenin._basemodel import calculated_voltage
 
-    current = 0.
-    ocv = 4.
-    hyst = 0.
-    R0 = 1.
+    current = 0.0
+    ocv = 4.0
+    hyst = 0.0
+    R0 = 1.0
 
     # with 1D eta_j
     eta_j = np.zeros(3)
@@ -68,7 +53,7 @@ def test_calculated_voltage():
     eta_j = np.zeros((500, 3))
     npt.assert_allclose(
         calculated_voltage(current, ocv, hyst, eta_j, R0),
-        ocv*np.ones(500),
+        ocv * np.ones(500),
     )
 
     # with higher-dimension eta_j
@@ -78,28 +63,28 @@ def test_calculated_voltage():
 
 
 def test_mutable_warning():
-    from thevenin._basemodel import short_warn
+    from thevenin._basemodel import _short_warn
 
     with warnings.catch_warnings(record=True) as report:
         warnings.simplefilter('ignore')
-        short_warn("This is a test warning.")
+        _short_warn("This is a test warning.")
 
     assert len(report) == 0
 
 
 def test_detected_warning():
-    from thevenin._basemodel import short_warn
+    from thevenin._basemodel import _short_warn
 
     with pytest.warns(UserWarning):
-        short_warn("This is a test warning")
+        _short_warn("This is a test warning")
 
 
 def test_custom_format():
-    from thevenin._basemodel import formatwarning, short_warn
+    from thevenin._basemodel import _formatwarning, _short_warn
 
     with warnings.catch_warnings(record=True) as report:
         warnings.simplefilter('always')
-        short_warn("This is a test warning.", Warning)
+        _short_warn("This is a test warning.", Warning)
 
     args = (
         report[0].message,
@@ -110,7 +95,7 @@ def test_custom_format():
     )
 
     # ensure the same inputs, remove  any \n, \t, etc.
-    custom = formatwarning(*args).strip()
+    custom = _formatwarning(*args).strip()
     original = warnings.formatwarning(*args).strip()
 
     # custom format works

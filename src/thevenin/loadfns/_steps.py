@@ -2,17 +2,19 @@ from __future__ import annotations
 
 import numpy as np
 
-if not hasattr(np, 'concat'):  # pragma: no cover
-    np.concat = np.concatenate
-
 
 class StepFunction:
     """Piecewise step function."""
 
-    __slots__ = ('_tp', '_yp', '_func',)
+    __slots__ = ('_tp', '_yp', '_func')
 
-    def __init__(self, tp: np.ndarray, yp: np.ndarray, y0: float = 0.,
-                 ignore_nan: bool = False) -> None:
+    def __init__(
+        self,
+        tp: np.ndarray,
+        yp: np.ndarray,
+        y0: float = 0.0,
+        ignore_nan: bool = False,
+    ) -> None:
         """
         Construct a piecewise step function given the times at which step
         changes occur and the values for each time interval.
@@ -72,7 +74,7 @@ class StepFunction:
         if tp.size != yp.size:
             raise ValueError("tp and yp must be same size.")
 
-        if any(np.diff(tp) <= 0.):
+        if any(np.diff(tp) <= 0.0):
             raise ValueError("tp must be strictly increasing.")
 
         self._tp = tp
@@ -99,7 +101,7 @@ class StepFunction:
 
         self._func = func
 
-    def __repr__(self) -> str:  # pragma: no cover
+    def __repr__(self) -> str:
         return f"StepFunction(num_steps={self._tp.size})"
 
     def __call__(self, t: np.ndarray) -> np.ndarray:
@@ -109,10 +111,15 @@ class StepFunction:
 class RampedSteps:
     """Step function with ramps."""
 
-    __slots__ = ('_tp', '_yp', '_func', '_t_ramp',)
+    __slots__ = ('_tp', '_yp', '_func', '_t_ramp')
 
-    def __init__(self, tp: np.ndarray, yp: np.ndarray, t_ramp: float,
-                 y0: float = 0.) -> None:
+    def __init__(
+        self,
+        tp: np.ndarray,
+        yp: np.ndarray,
+        t_ramp: float,
+        y0: float = 0.0,
+    ) -> None:
         """
         A class similar to StepFunction, with the same tp, yp, and y0, but
         step transitions include ramps with duration t_ramp. Generally, this
@@ -154,10 +161,10 @@ class RampedSteps:
         if tp.size != yp.size:
             raise ValueError("tp and yp must be same size.")
 
-        if t_ramp <= 0.:
+        if t_ramp <= 0.0:
             raise ValueError("t_ramp must be strictly positive.")
 
-        if any(np.diff(tp) <= 0.):
+        if any(np.diff(tp) <= 0.0):
             raise ValueError("tp must be strictly increasing.")
 
         tp = np.concat((tp, tp + t_ramp))
@@ -171,7 +178,7 @@ class RampedSteps:
 
         self._func = lambda t: np.interp(t, self._tp, self._yp)
 
-    def __repr__(self) -> str:  # pragma: no cover
+    def __repr__(self) -> str:
 
         num_steps = self._tp.size
         t_ramp = self._t_ramp
