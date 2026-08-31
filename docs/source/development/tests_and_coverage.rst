@@ -11,8 +11,11 @@ Testing Practices
 * Test organization
     Tests should be organized first by module and then by class and/or function. This helps in managing and locating tests effectively. Avoid grouping tests into a single file just because they share similar functions. Instead, organize them based on their associated modules.
 
-* Naming conventions
-    All test functions should start with `test_` followed by a descriptive name (using snake case) indicating what is being tested. For example, `test_calculate_total_price` is preferable to `test_Calculator` unless the class is simple enough to be covered with a single test. Design tests to cover specific units, features, or applications of the class or function. 
+* Testing with functions
+    All test functions should start with `test_` followed by a descriptive name (using snake case) indicating what is being tested. For example, `test_calculate_total_price` is preferable to `test_Calculator` unless the class is simple enough to be covered with a single test. Design tests to cover specific units, features, or applications of the class or function.
+
+* Testing with classes
+    When using classes for testing, the class name should start with `Test` followed by the name of the class or function being tested (using Pascal case, e.g., `TestCalculator`). In these cases it is okay to be less descriptive with the class name, as the test functions (methods of the class) will provide the necessary context and should follow the same rules as testing with functions. Additionally, it is recommended to break up validation and functional tests into separate classes like `TestCalculatorValidation` and `TestCalculatorFunctional` to keep tests organized and focused. Validation tests should focus on catching warnings and errors, while functional tests should focus on the expected behavior of the class or function. 
 
 * Test data
     Use fixtures where appropriate. If mock data is necessary, make a subfolder in the `tests/` to store it in. Make sure the file(s) have descriptive names. Ensure that test data is manageable and not overly complex.

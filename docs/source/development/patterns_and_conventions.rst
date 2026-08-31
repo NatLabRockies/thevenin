@@ -15,7 +15,10 @@ To ensure consistency and ease of development, the following conventions are enf
     All file names begin with a leading underscore (`_`) to prevent them from showing up in an editor's tab completion window. File names also use snake case (e.g., `_my_class.py`) and are generally short but descriptive. Typically, the name of the file should reflect the class or function it contains.
 
 2. Class and function names: 
-    Classes use `CamelCase`, while functions and methods use `snake_case`. Classes should generally be in their own file unless grouped logically with others.
+    Classes use `PascalCase`. Functions, methods, and variables use `snake_case`. Classes should generally be in their own file unless grouped logically with others. Use preceding `_` for hidden/internal classes, functions, variables, etc.
+
+3. Constants: 
+    Constants are defined at the top of a file and use `UPPERCASE_SNAKE_CASE`. This makes them easily identifiable and accessible for users.
 
 Import Considerations
 ---------------------
@@ -57,8 +60,8 @@ For class definitions, we follow a specific ordering convention to make it easie
 
 1. **Magic Methods:** These special methods (e.g., `__init__`, `__repr__`, etc.) come first. They define key behaviors of the class.
 2. **Special Members:** Any properties, class methods, static methods, etc. Essentially, any decorated and/or "special" methods.
-3. **Hidden Methods:** These are internal methods (denoted with a leading underscore) that handle functionality not meant to be directly accessed by users.
-4. **User-Facing Methods:** These are the public methods intended for external use. They define the class's core functionality for users.
+3. **User-Facing Methods:** These are the public methods intended for external use. They define the class's core functionality for users.
+4. **Hidden Methods:** These are internal methods (denoted with a leading underscore) that handle functionality not meant to be directly accessed by users.
 
 In some cases, exceptions to this order may be made, particularly if moving a hidden method closer to a user-facing method improves readability. However, this should be done with discretion and only when it helps clarify the flow of the class's logic. See below for an example.
 
@@ -66,34 +69,35 @@ In some cases, exceptions to this order may be made, particularly if moving a hi
 
     class MyClass:
         # Magic Methods
-        def __init__(self, value):
+        def __init__(self, value: int) -> None:
             self._value = value
         
-        def __repr__(self):
+        def __repr__(self) -> str:
             return f"MyClass(value={self.value})"
 
         # Special Members
         @property
-        def value(self):
+        def value(self) -> int:
         return self._value
+        
+        # User-Facing Methods
+        def do_something(self) -> str:
+            self._helper_function()
+            return f"Value is {self.value}"
         
         # Hidden Methods
         def _helper_function(self):
             # Some internal logic
             pass
-        
-        # User-Facing Methods
-        def do_something(self):
-            self._helper_function()
-            return f"Value is {self.value}"
 
 Module Considerations
 ---------------------
 In our modules, we maintain a consistent structure to enhance readability and organization. The general order is as follows:
 
-1. **Classes:** If a module contains any class definitions, they should appear first. Classes define the core structure and behavior of the module.
-2. **Functions:** Public functions follow the class definitions. These functions are the primary operations or utilities that the module offers for external use.
-3. **Hidden Functions:** Internal functions (those with a leading underscore) come last. These are used for supporting internal logic and are not intended to be accessed directly by users.
+1. **Constants:** Any module-level constants or configuration variables should be defined at the top. This makes it easy for users to find and modify them if needed.
+2. **Classes:** If a module contains any class definitions, they should appear first. Classes define the core structure and behavior of the module.
+3. **Functions:** Public functions follow the class definitions. These functions are the primary operations or utilities that the module offers for external use.
+4. **Hidden Functions:** Internal functions (those with a leading underscore) come last. These are used for supporting internal logic and are not intended to be accessed directly by users.
 
 This ordering helps ensure that users interacting with the module can quickly identify the main components, while hidden/internal logic remains at the bottom for a clearer separation of concerns.
 

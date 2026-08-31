@@ -26,7 +26,7 @@ During the review process, the following aspects are considered:
 
 Timeline and Feedback
 ---------------------
-* **Review timeline:** Once a reviewer is assigned, contributors should expect communication at least every 48 business hours.
+* **Review timeline:** Once a reviewer is assigned, contributors should expect communication at least every 5 business days. Unfortunately, our team is small and may not be able to provide rapid guidance on every PR. If you have not received feedback within 5 business days, please leave a comment on the PR to prompt a response.
 * **Splitting PRs:** For large or complex PRs, reviewers may request that the changes be split into smaller, more manageable PRs.
 * **Reviewer feedback:** Reviewers should provide specific, actionable feedback on the code. Even when no changes are needed, the reviewer will leave a comment confirming that the PR meets all criteria.
 
