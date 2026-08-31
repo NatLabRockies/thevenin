@@ -3,6 +3,7 @@
 ## [Unreleased](https://github.com/NatLabRockies/thevenin)
 
 ### New Features
+- Drop support for Python 3.10 and prep for 3.15 support starting Oct 2026 ([#33](https://github.com/NatLabRockies/thevenin/pull/33))
 - New functions to list, load, print, and download `.yaml` templates ([#26](https://github.com/NatLabRockies/thevenin/pull/26))
 - Drop support for Python 3.9 and add support for 3.14 in tests/release ([#23](https://github.com/NatLabRockies/thevenin/pull/23))
 - Add version warning banner to docs for dev and older releases ([#22](https://github.com/NatLabRockies/thevenin/pull/22))
@@ -18,6 +19,7 @@
 - Use `for` loops in `Solution` post-processing if arrays are incompatible ([#18](https://github.com/NatLabRockies/thevenin/pull/18))
 
 ### Breaking Changes
+- Pin numpy to at least 2.0 and fully remove deprecated `Model` class; use `Simulation` ([#33](https://github.com/NatLabRockies/thevenin/pull/33))
 - There is no longer a `linspace` option from `tspan: tuple[float, int]` construction ([#29](https://github.com/NatLabRockies/thevenin/pull/29))
 - `initial_state` was renamed to `state0` in `sim.pre()` ([#14](https://github.com/NatLabRockies/thevenin/pull/14))
 
