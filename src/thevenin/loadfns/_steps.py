@@ -2,9 +2,6 @@ from __future__ import annotations
 
 import numpy as np
 
-if not hasattr(np, 'concat'):  # pragma: no cover
-    np.concat = np.concatenate
-
 
 class StepFunction:
     """Piecewise step function."""
@@ -117,7 +114,11 @@ class RampedSteps:
     __slots__ = ('_tp', '_yp', '_func', '_t_ramp')
 
     def __init__(
-        self, tp: np.ndarray, yp: np.ndarray, t_ramp: float, y0: float = 0.0
+        self,
+        tp: np.ndarray,
+        yp: np.ndarray,
+        t_ramp: float,
+        y0: float = 0.0,
     ) -> None:
         """
         A class similar to StepFunction, with the same tp, yp, and y0, but

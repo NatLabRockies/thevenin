@@ -16,9 +16,6 @@ if TYPE_CHECKING:
 
     Solution = TypeVar('Solution', bound='BaseSolution')
 
-if not hasattr(np, 'concat'):  # pragma: no cover
-    np.concat = np.concatenate
-
 
 class ExitHandler:
     """
@@ -63,7 +60,7 @@ class BaseSolution(IDAResult):
             A console-readable instance representation.
 
         """
-        classname = self.__class__.__name__
+        classname = type(self).__name__
 
         def wrap_string(label: str, value: list, width: int):
             if isinstance(value, Iterable):
@@ -202,7 +199,10 @@ class StepSolution(BaseSolution):
     """Single-step solution."""
 
     def __init__(
-        self, sim: Simulation, ida_soln: IDAResult, timer: float
+        self,
+        sim: Simulation,
+        ida_soln: IDAResult,
+        timer: float,
     ) -> None:
         """
         A solution instance for a single experimental step.

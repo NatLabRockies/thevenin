@@ -6,10 +6,7 @@ import numpy as np
 class Ramp:
     """Linearly ramping load."""
 
-    __slots__ = (
-        '_m',
-        '_b',
-    )
+    __slots__ = ('_m', '_b')
 
     def __init__(self, m: float, b: float = 0.0) -> None:
         """
@@ -36,15 +33,14 @@ class Ramp:
 class Ramp2Constant:
     """Ramp to a constant load."""
 
-    __slots__ = (
-        '_m',
-        '_b',
-        '_step',
-        '_sharpness',
-    )
+    __slots__ = ('_m', '_b', '_step', '_sharpness')
 
     def __init__(
-        self, m: float, step: float, b: float = 0.0, sharpness: float = 100.0
+        self,
+        m: float,
+        step: float,
+        b: float = 0.0,
+        sharpness: float = 100.0,
     ) -> None:
         """
         A load profile that ramps with slope m unil the constant step value

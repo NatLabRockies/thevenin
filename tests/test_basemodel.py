@@ -63,28 +63,28 @@ def test_calculated_voltage():
 
 
 def test_mutable_warning():
-    from thevenin._basemodel import short_warn
+    from thevenin._basemodel import _short_warn
 
     with warnings.catch_warnings(record=True) as report:
         warnings.simplefilter('ignore')
-        short_warn("This is a test warning.")
+        _short_warn("This is a test warning.")
 
     assert len(report) == 0
 
 
 def test_detected_warning():
-    from thevenin._basemodel import short_warn
+    from thevenin._basemodel import _short_warn
 
     with pytest.warns(UserWarning):
-        short_warn("This is a test warning")
+        _short_warn("This is a test warning")
 
 
 def test_custom_format():
-    from thevenin._basemodel import formatwarning, short_warn
+    from thevenin._basemodel import _formatwarning, _short_warn
 
     with warnings.catch_warnings(record=True) as report:
         warnings.simplefilter('always')
-        short_warn("This is a test warning.", Warning)
+        _short_warn("This is a test warning.", Warning)
 
     args = (
         report[0].message,
@@ -95,7 +95,7 @@ def test_custom_format():
     )
 
     # ensure the same inputs, remove  any \n, \t, etc.
-    custom = formatwarning(*args).strip()
+    custom = _formatwarning(*args).strip()
     original = warnings.formatwarning(*args).strip()
 
     # custom format works

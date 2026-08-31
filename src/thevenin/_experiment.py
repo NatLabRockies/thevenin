@@ -9,11 +9,7 @@ import numpy as np
 class Experiment:
     """Experiment builder."""
 
-    __slots__ = (
-        '_steps',
-        '_kwargs',
-        '_options',
-    )
+    __slots__ = ('_steps', '_kwargs', '_options')
 
     def __init__(self, **kwargs) -> None:
         """

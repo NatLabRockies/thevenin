@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, TypeVar
-
 import time
+
 from copy import deepcopy
+from typing import TYPE_CHECKING, TypeVar
 
 import numpy as np
 
@@ -204,7 +204,10 @@ class Simulation(BaseModel):
         return soln
 
     def run(
-        self, expr: Experiment, reset_state: bool = True, t_shift: float = 1e-3
+        self,
+        expr: Experiment,
+        reset_state: bool = True,
+        t_shift: float = 1e-3,
     ) -> CycleSolution:
         """
         Run a full experiment.
