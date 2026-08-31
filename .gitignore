@@ -12,9 +12,6 @@ __pycache__/
 *.pyd
 *.pxi
 
-# VSCode
-.vscode/
-
 # Distribution / packaging
 .Python
 build/

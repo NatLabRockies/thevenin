@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import TypeVar, TYPE_CHECKING
+
+from typing import TYPE_CHECKING, TypeVar
 
 import time
 from copy import deepcopy
@@ -8,7 +9,7 @@ import numpy as np
 
 from thevenin._basemodel import BaseModel
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from ._experiment import Experiment
     from ._prediction import Prediction, TransientState
     from ._solutions import BaseSolution, StepSolution, CycleSolution
@@ -83,13 +84,13 @@ class Simulation(BaseModel):
         algidx = [ptr['V_cell']]
 
         mass_matrix = np.ones(ptr['size'])
-        mass_matrix[ptr['V_cell']] = 0.
+        mass_matrix[ptr['V_cell']] = 0.0
 
         sv0 = np.zeros(ptr['size'])
         sv0[ptr['soc']] = self.soc0
         sv0[ptr['T_cell']] = self.T_inf / self._T_ref
-        sv0[ptr['hyst']] = 0.
-        sv0[ptr['eta_j']] = 0.
+        sv0[ptr['hyst']] = 0.0
+        sv0[ptr['eta_j']] = 0.0
         sv0[ptr['V_cell']] = self.ocv(self.soc0)
 
         svdot0 = np.zeros_like(sv0)
@@ -98,13 +99,15 @@ class Simulation(BaseModel):
         self._algidx = algidx
         self._mass_matrix = mass_matrix
 
-        self._t0 = 0.
+        self._t0 = 0.0
         if isinstance(state0, BaseSolution):
             soln = deepcopy(state0)
             if soln.y[-1].size != sv0.size:
-                raise ValueError("Cannot initialize state based on Solution"
-                                 " object given in 'state0'. The model and"
-                                 " solution have incompatible sizes.")
+                raise ValueError(
+                    "Cannot initialize state based on Solution"
+                    " object given in 'state0'. The model and"
+                    " solution have incompatible sizes."
+                )
 
             self._sv0 = soln.y[-1]
             self._svdot0 = soln.yp[-1]
@@ -112,9 +115,11 @@ class Simulation(BaseModel):
         elif isinstance(state0, TransientState):
             state0 = deepcopy(state0)
             if state0.num_RC_pairs != self.num_RC_pairs:
-                raise ValueError("Cannot initialize state from TransientState"
-                                 " object given in 'state0'. The model and"
-                                 " solution have incompatible sizes.")
+                raise ValueError(
+                    "Cannot initialize state from TransientState"
+                    " object given in 'state0'. The model and"
+                    " solution have incompatible sizes."
+                )
 
             sv0[ptr['soc']] = state0.soc
             sv0[ptr['T_cell']] = state0.T_cell / self._T_ref
@@ -198,8 +203,9 @@ class Simulation(BaseModel):
 
         return soln
 
-    def run(self, expr: Experiment, reset_state: bool = True,
-            t_shift: float = 1e-3) -> CycleSolution:
+    def run(
+        self, expr: Experiment, reset_state: bool = True, t_shift: float = 1e-3
+    ) -> CycleSolution:
         """
         Run a full experiment.
 
@@ -246,7 +252,7 @@ class Simulation(BaseModel):
 
         soln = CycleSolution(*solns, t_shift=t_shift)
 
-        self._t0 = 0.
+        self._t0 = 0.0
         if reset_state:
             self.pre()
 
@@ -268,8 +274,14 @@ class Simulation(BaseModel):
 
         return Prediction(self._get_params_dict)
 
-    def _resfn(self, t: float, sv: np.ndarray, svdot: np.ndarray,
-               res: np.ndarray, userdata: dict) -> None:
+    def _resfn(
+        self,
+        t: float,
+        sv: np.ndarray,
+        svdot: np.ndarray,
+        res: np.ndarray,
+        userdata: dict,
+    ) -> None:
         """
         Solver-structured residuals.
 
@@ -295,7 +307,7 @@ class Simulation(BaseModel):
         None.
 
         """
-        res[:] = self._mass_matrix*svdot - self._rhsfn(t, sv, userdata)
+        res[:] = self._mass_matrix * svdot - self._rhsfn(t, sv, userdata)
 
 
 class _EventsFunction:
@@ -316,8 +328,14 @@ class _EventsFunction:
         self.values = limits[1::2]
         self.size = len(self.keys)
 
-    def __call__(self, t: float, sv: np.ndarray, svdot: np.ndarray,
-                 events: np.ndarray, userdata: dict) -> None:
+    def __call__(
+        self,
+        t: float,
+        sv: np.ndarray,
+        svdot: np.ndarray,
+        events: np.ndarray,
+        userdata: dict,
+    ) -> None:
         """
         Solver-structured event function.
 

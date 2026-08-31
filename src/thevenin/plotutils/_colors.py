@@ -1,12 +1,18 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from numpy import ndarray
 
 
-def get_colors(size: int, data: ndarray = None, norm: ndarray = None,
-               alpha: float = 1., cmap: str = 'jet'):
+def get_colors(
+    size: int,
+    data: ndarray = None,
+    norm: ndarray = None,
+    alpha: float = 1.0,
+    cmap: str = 'jet',
+):
     """
     Sample colors from 'cmap'.
 

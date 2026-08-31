@@ -8,7 +8,7 @@ readme = "README.md"
 dynamic = ["version"]
 description = "Equivalent circuit models in Python."
 keywords = ["ECM", "equivalent", "circuit", "model", "battery"]
-requires-python = ">=3.10,<3.15"
+requires-python = ">=3.11,<3.16"
 license = "BSD-3-Clause"
 license-files = ["LICENSE"]
 authors = [
@@ -23,11 +23,11 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
 ]
 dependencies = [
     "numpy",
@@ -49,6 +49,9 @@ thevenin = ["_resources/*.yaml"]
 [tool.ruff]
 line-length = 80
 exclude = ["build", "docs", "images", "reports"]
+
+[tool.ruff.format]
+quote-style = "preserve"
 
 [tool.ruff.lint]
 preview = true
@@ -73,6 +76,12 @@ convention = "numpy"
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*" = ["D"]
+
+[tool.coverage.report]
+exclude_also = [
+    "def __repr__",
+    "if TYPE_CHECKING",
+]
 
 [project.optional-dependencies]
 docs = [

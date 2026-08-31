@@ -83,9 +83,9 @@ def calculated_voltage(current, ocv, hyst, eta_j, R0) -> float | np.ndarray:
 
     """
     if eta_j.ndim == 1:
-        return ocv + hyst - np.sum(eta_j) - current*R0
+        return ocv + hyst - np.sum(eta_j) - current * R0
     elif eta_j.ndim == 2:
-        return ocv + hyst - np.sum(eta_j, axis=1) - current*R0
+        return ocv + hyst - np.sum(eta_j, axis=1) - current * R0
     else:
         raise ValueError("Dimension error in calculating voltage.")
 
@@ -193,7 +193,6 @@ class BaseModel(ABC):
         self.R0 = params.pop('R0')
 
         for j in range(1, self.num_RC_pairs + 1):
-
             assert 'R' + str(j) in params, f"'params' is missing R{str(j)}"
             assert 'C' + str(j) in params, f"'params' is missing C{str(j)}"
 
@@ -204,14 +203,16 @@ class BaseModel(ABC):
 
         if len(params) != 0:
             extra_keys = list(params.keys())
-            raise ValueError("'params' contains invalid and/or excess"
-                             f" key/value pairs: {extra_keys=}")
+            raise ValueError(
+                "'params' contains invalid and/or excess"
+                f" key/value pairs: {extra_keys=}"
+            )
 
         self._T_ref = self.T_inf
 
         self.pre()
 
-    def __repr__(self) -> str:  # pragma: no cover
+    def __repr__(self) -> str:
         """
         Return a readable repr string.
 
@@ -231,12 +232,12 @@ class BaseModel(ABC):
 
     @property
     def classname(self) -> str:
-        """Return the name of the class."""
+        """The name of the class."""
         return self.__class__.__name__
 
     @property
     def num_RC_pairs(self) -> int:
-        """Return the number of RC pairs."""
+        """The number of RC pairs."""
         return self._num_RC_pairs
 
     @property
@@ -249,7 +250,7 @@ class BaseModel(ABC):
 
     @property
     def _get_params_dict(self) -> dict:
-        """Return the params dictionary needed to initialize a new instance."""
+        """The parameters dictionary needed to initialize a new instance."""
         params = {}
         for k in self._repr_keys:
             params[k] = getattr(self, k)
@@ -280,13 +281,14 @@ class BaseModel(ABC):
 
         classname = self.classname
         if missing_attrs:
-            raise AttributeError(f"'{classname}' missing attrs {missing_attrs}"
-                                 " to be consistent with 'num_RC_pairs'.")
+            raise AttributeError(
+                f"'{classname}' missing attrs {missing_attrs}"
+                " to be consistent with 'num_RC_pairs'."
+            )
 
         extra_attrs = []
         pattern = re.compile(r"^[RC](\d+)")
         for attr in list(self.__dict__.keys()):
-
             matches = pattern.match(attr)
             if matches is None:
                 pass
@@ -294,8 +296,10 @@ class BaseModel(ABC):
                 extra_attrs.append(attr)
 
         if extra_attrs:
-            short_warn(f"Extra RC attributes {extra_attrs} are present, beyond"
-                       " what was expected based on 'num_RC_pairs'.")
+            short_warn(
+                f"Extra RC attributes {extra_attrs} are present, beyond"
+                " what was expected based on 'num_RC_pairs'."
+            )
 
     def _rhsfn(self, t: float, sv: np.ndarray, userdata: dict) -> np.ndarray:
         """
@@ -329,7 +333,7 @@ class BaseModel(ABC):
 
         # state
         soc = sv[ptr['soc']]
-        T_cell = sv[ptr['T_cell']]*self._T_ref
+        T_cell = sv[ptr['T_cell']] * self._T_ref
         hyst = sv[ptr['hyst']]
         eta_j = sv[ptr['eta_j']]
 
@@ -338,8 +342,8 @@ class BaseModel(ABC):
         R0 = self.R0(soc, T_cell)
 
         # dependent parameters
-        Q_inv = 1. / (3600. * self.capacity)
-        alpha_inv = 1. / (self.mass * self.Cp * self._T_ref)
+        Q_inv = 1.0 / (3600.0 * self.capacity)
+        alpha_inv = 1.0 / (self.mass * self.Cp * self._T_ref)
 
         # current, voltage, and power - different for Simulation/Prediction
         if self._classname == 'Simulation':
@@ -350,29 +354,30 @@ class BaseModel(ABC):
             current = userdata['current'](t)
             voltage = calculated_voltage(current, ocv, hyst, eta_j, R0)
 
-        power = current*voltage
+        power = current * voltage
 
         # state of charge (differential)
-        ce = 1. if current >= 0. else self.ce
-        rhs[ptr['soc']] = -ce*current*Q_inv
+        ce = 1.0 if current >= 0.0 else self.ce
+        rhs[ptr['soc']] = -ce * current * Q_inv
 
         # temperature (differential)
-        Q_gen = current*(ocv + hyst - voltage)
-        Q_conv = self.h_therm*self.A_therm*(self.T_inf - T_cell)
+        Q_gen = current * (ocv + hyst - voltage)
+        Q_conv = self.h_therm * self.A_therm * (self.T_inf - T_cell)
 
-        rhs[ptr['T_cell']] = alpha_inv * (Q_gen + Q_conv) \
-                           * (1 - self.isothermal)
+        rhs[ptr['T_cell']] = (
+            alpha_inv * (Q_gen + Q_conv) * (1 - self.isothermal)
+        )
 
         # hysteresis (differential)
         direction = -np.sign(current)
-        coeff = np.abs(ce*current*self.gamma*Q_inv)
-        rhs[ptr['hyst']] = coeff*(direction*self.M_hyst(soc) - hyst)
+        coeff = np.abs(ce * current * self.gamma * Q_inv)
+        rhs[ptr['hyst']] = coeff * (direction * self.M_hyst(soc) - hyst)
 
         # RC overpotentials (differential)
         for j, pj in enumerate(ptr['eta_j'], start=1):
             Rj = getattr(self, 'R' + str(j))(soc, T_cell)
             Cj = getattr(self, 'C' + str(j))(soc, T_cell)
-            rhs[pj] = -sv[pj] / (Rj*Cj) + current / Cj
+            rhs[pj] = -sv[pj] / (Rj * Cj) + current / Cj
 
         # cell voltage (algebraic) - only if using Simulation, not Prediction
         if self._classname == 'Simulation':
@@ -383,7 +388,7 @@ class BaseModel(ABC):
             if mode == 'current' and units == 'A':
                 rhs[ptr['V_cell']] = current - value(t)
             elif mode == 'current' and units == 'C':
-                rhs[ptr['V_cell']] = current - self.capacity*value(t)
+                rhs[ptr['V_cell']] = current - self.capacity * value(t)
             elif mode == 'voltage':
                 rhs[ptr['V_cell']] = voltage - value(t)
             elif mode == 'power':
@@ -399,10 +404,10 @@ class BaseModel(ABC):
                 'current_C': current / self.capacity,
                 'voltage_V': voltage,
                 'power_W': power,
-                'capacity_Ah': soc*self.capacity,
+                'capacity_Ah': soc * self.capacity,
                 'time_s': total_time,
-                'time_min': total_time / 60.,
-                'time_h': total_time / 3600.,
+                'time_min': total_time / 60.0,
+                'time_h': total_time / 3600.0,
             }
 
             userdata['events'] = events

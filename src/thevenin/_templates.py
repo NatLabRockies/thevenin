@@ -72,7 +72,6 @@ def load_templates(*names: str) -> dict:
 
     templates = []
     for name in names:
-
         if not name.endswith('.yaml'):
             name += '.yaml'
 
@@ -115,6 +114,6 @@ def print_templates(name: str) -> None:
     if name not in available:
         raise FileNotFoundError(f"{name} is not an available template.")
 
-    print('='*30, name, '='*30, sep='\n')
+    print('=' * 30, name, '=' * 30, sep='\n')
     with open(resources.joinpath(name), 'r') as f:
         print(f.read())

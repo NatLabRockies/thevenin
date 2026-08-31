@@ -158,11 +158,11 @@ def run_pre_commit(session: nox.Session) -> None:
     """
     Run all linters and tests before committing.
 
-    Order of sessions: ruff, spellcheck, pytest. All optional command arguments
+    Order of sessions: spellcheck, ruff, pytest. All optional command arguments
     (e.g., 'format' for linter, 'write' for spellcheck, and/or 'parallel' for
     pytest) are still compatible.
 
     """
-    run_ruff(session)
     run_spellcheck(session)
+    run_ruff(session)
     run_pytest(session)

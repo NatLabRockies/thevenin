@@ -53,7 +53,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.14"
+          python-version: "3.14"  # Oct 2026: 3.15
 
       - name: Check version details against PyPI, tag, etc.
         run: |
@@ -66,7 +66,7 @@ jobs:
           python version_checker.py --tag="$TAG_VERSION" --local="$LOCAL_VERSION"
 
   build:
-    name: (build ubuntu-latest, 3.14)
+    name: (build ubuntu-latest, 3.14)  # Oct 2026: 3.15
     needs: [details, check-version]
     runs-on: ubuntu-latest
 
@@ -77,7 +77,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.14"
+          python-version: "3.14"  # Oct 2026: 3.15
 
       - name: Install build
         run: pip install build
@@ -110,7 +110,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.14"
+          python-version: "3.14"  # Oct 2026: 3.15
 
       - name: Install twine
         run: pip install twine

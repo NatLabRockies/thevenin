@@ -1,0 +1,63 @@
+{
+    // 1. Lock autoDocstring to NumPy style
+    "autoDocstring.docstringFormat": "numpy",
+
+    // 2. Force Ruff as the only formatter and linter
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.ruff": "explicit",
+            "source.organizeImports.ruff": "never",
+        },
+    },
+
+    // 3. Configure notebook with same Ruff settings as other .py files
+    "notebook.editorOptionsCustomizations": {
+    "editor.tabSize": 4,
+    "editor.indentSize": 4,
+    "editor.insertSpaces": true
+    },
+    "notebook.formatOnSave.enabled": true,
+    "notebook.defaultFormatter": "charliermarsh.ruff",
+    "notebook.codeActionsOnSave": {
+        "notebook.source.fixAll": "explicit",
+        "notebook.source.organizeImports": "never",
+    },
+    "notebook.lineNumbers": "on",
+    "notebook.consolidatedRunButton": true,
+
+    // 4. Configure Ruff settings for consistency with pyproject.toml settings
+    "ruff.configuration": {
+        "line-length": 80,
+        "exclude": ["build", "docs", "images", "reports"],
+        "unsafe-fixes": true,
+        "format": {
+            "quote-style": "preserve",
+        },
+        "lint": {
+            "preview": true,
+            "select": [
+                "E", // All pycodestyle errors
+                "W", // All pycodestyle warnings
+                "F", // All pyflakes errors
+                "B", // All flake8-bugbear checks
+                "D"  // All pydocstyle checks
+            ],
+            "extend-select": [
+                "E302", "E305" // Expected blank lines (requires preview=true)
+            ],
+            "ignore": [
+                "B007", "B009", "B010", "B028", "B905",
+                "D1", "D203", "D205", "D212", "D400", "D401", "D415",
+                "E201", "E202", "E226", "E241", "E731",
+            ],
+            "pydocstyle": {
+                "convention": "numpy",
+            },
+            "per-file-ignores": {
+                "tests/**/*": ["D"],
+            },
+        },
+    },
+}
