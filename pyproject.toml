@@ -34,7 +34,7 @@ dependencies = [
     "numpy>=2.0",
     "matplotlib",
     "ruamel.yaml",
-    "scikit-sundae>=1.1.0",
+    "scikit-sundae>=1.2.0rc1",
 ]
 
 [tool.setuptools.dynamic]
