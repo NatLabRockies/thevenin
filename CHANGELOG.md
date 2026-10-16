@@ -24,6 +24,7 @@
 - `initial_state` was renamed to `state0` in `sim.pre()` ([#14](https://github.com/NatLabRockies/thevenin/pull/14))
 
 ### Chores
+- Move workflows to use Python 3.15 as upper bound, pin sksundae to >= 1.2.0 ([#34](https://github.com/NatLabRockies/thevenin/pull/34))
 - Switch linter over to `ruff`, enable `codecov` workflow, update README badges ([#31](https://github.com/NatLabRockies/thevenin/pull/31))
 - Make GitHub hyperlinks reference new org name `NREL` -> `NatLabRockies` ([#30](https://github.com/NatLabRockies/thevenin/pull/30))
 - Allow single backticks for sphinx inline code (`default_role = 'literal'`) ([#28](https://github.com/NatLabRockies/thevenin/pull/28))
