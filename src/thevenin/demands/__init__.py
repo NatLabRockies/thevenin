@@ -1,7 +1,7 @@
 """
-The `loadfns` module contains classes to construct time-varying load profiles.
-All of the classes are callable after construction and take in a value of
-time in seconds. Most load functions include a linear ramp that "smooths"
+The `demands` module contains classes to construct time-varying demand
+profiles. All of the classes are callable after construction and take in a
+value of time in seconds. Most demands include a linear ramp that "smooths"
 transitions from rest to a constant load, or between constant steps. Using
 ramps helps the solver maintain stability when a boundary condition sharply
 changes from one value to another, e.g., jumping from rest into a high-rate

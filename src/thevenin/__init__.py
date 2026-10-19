@@ -30,9 +30,9 @@ from ._templates import (
 )
 
 # submodules
-from . import loadfns
-from . import plotutils
+from . import demands
 from . import solvers
+from . import plotutils
 
 __version__ = '0.3.0.dev0'
 
@@ -47,7 +47,7 @@ __all__ = [
     'list_templates',
     'load_templates',
     'print_templates',
-    'loadfns',
+    'demands',
     'plotutils',
     'solvers',
 ]
