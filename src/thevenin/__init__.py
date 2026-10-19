@@ -34,7 +34,7 @@ from . import demands
 from . import solvers
 from . import plotutils
 
-__version__ = '0.3.0.dev0'
+__version__ = '1.0.0.dev0'
 
 __all__ = [
     'Experiment',
