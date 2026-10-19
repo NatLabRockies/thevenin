@@ -19,11 +19,13 @@
 - Use `for` loops in `Solution` post-processing if arrays are incompatible ([#18](https://github.com/NatLabRockies/thevenin/pull/18))
 
 ### Breaking Changes
+- The `loadsfn` module was renamed to `demands`, there is no deprecation period ([#35](https://github.com/NatLabRockies/thevenin/pull/35))
 - Pin numpy to at least 2.0 and fully remove deprecated `Model` class; use `Simulation` ([#33](https://github.com/NatLabRockies/thevenin/pull/33))
 - There is no longer a `linspace` option from `tspan: tuple[float, int]` construction ([#29](https://github.com/NatLabRockies/thevenin/pull/29))
 - `initial_state` was renamed to `state0` in `sim.pre()` ([#14](https://github.com/NatLabRockies/thevenin/pull/14))
 
 ### Chores
+- Rename the `loadfns` module to `demands`, move version to v1.0.0.dev0 for breaking changes ([#35](https://github.com/NatLabRockies/thevenin/pull/35))
 - Move workflows to use Python 3.15 as upper bound, pin sksundae to >= 1.2.0 ([#34](https://github.com/NatLabRockies/thevenin/pull/34))
 - Switch linter over to `ruff`, enable `codecov` workflow, update README badges ([#31](https://github.com/NatLabRockies/thevenin/pull/31))
 - Make GitHub hyperlinks reference new org name `NREL` -> `NatLabRockies` ([#30](https://github.com/NatLabRockies/thevenin/pull/30))
