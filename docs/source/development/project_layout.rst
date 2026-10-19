@@ -32,5 +32,5 @@ Subpackages
 There are three submodules/subpackages that handle specific functionality:
 
 * `solvers`: Provides documentation for the IDA and CVODE solver options and result classes. These will likely not be used by the user directly, but the documentation is helpful since users may need to adjust solver settings to improve accuracy, stability, etc.
-* `loadfns`: Contains functions to assist users in building dynamic load profiles. These functions are especially useful for users looking to simulate different load scenarios in their models.
+* `demands`: Contains classes to assist users in building dynamic demand profiles (current, voltage, or power). These are especially useful for users looking to simulate different operating scenarios in their models.
 * `plotutils`: Contains utilities for visualizing simulation results. Any helper functions for plotting or figure generation live here to keep the core logic separate from visualization tasks.
