@@ -77,8 +77,10 @@ class StepFunction:
         if any(np.diff(tp) <= 0.0):
             raise ValueError("tp must be strictly increasing.")
 
+        self._num_steps = tp.size
+
         self._tp = tp
-        self._yp = np.concat(([y0], yp, [yp[-1]]))
+        self._yp = np.concat(([y0], yp, [yp[-1]]), dtype=float)
 
         def func(t):
 
@@ -102,7 +104,7 @@ class StepFunction:
         self._func = func
 
     def __repr__(self) -> str:
-        return f"StepFunction(num_steps={self._tp.size})"
+        return f"StepFunction(num_steps={self._num_steps})"
 
     def __call__(self, t: np.ndarray) -> np.ndarray:
         return self._func(t)
@@ -167,8 +169,10 @@ class RampedSteps:
         if any(np.diff(tp) <= 0.0):
             raise ValueError("tp must be strictly increasing.")
 
-        tp = np.concat((tp, tp + t_ramp))
-        yp = np.concat(([y0], yp[:-1], yp))
+        self._num_steps = tp.size
+
+        tp = np.concat((tp, tp + t_ramp), dtype=float)
+        yp = np.concat(([y0], yp[:-1], yp), dtype=float)
 
         argsort = np.argsort(tp)
 
@@ -179,8 +183,7 @@ class RampedSteps:
         self._func = lambda t: np.interp(t, self._tp, self._yp)
 
     def __repr__(self) -> str:
-
-        num_steps = self._tp.size
+        num_steps = self._num_steps
         t_ramp = self._t_ramp
 
         return f"RampedSteps(num_steps={num_steps}, t_ramp={t_ramp:.2e})"
