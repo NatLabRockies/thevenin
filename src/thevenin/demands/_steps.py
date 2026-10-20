@@ -6,7 +6,7 @@ import numpy as np
 class StepFunction:
     """Piecewise step function."""
 
-    __slots__ = ('_tp', '_yp', '_func')
+    __slots__ = ('_tp', '_yp', '_func', '_num_steps')
 
     def __init__(
         self,
@@ -113,7 +113,7 @@ class StepFunction:
 class RampedSteps:
     """Step function with ramps."""
 
-    __slots__ = ('_tp', '_yp', '_func', '_t_ramp')
+    __slots__ = ('_tp', '_yp', '_func', '_t_ramp', '_num_steps')
 
     def __init__(
         self,
