@@ -66,6 +66,13 @@ def test_add_step(expr):
     with pytest.raises(ValueError):
         expr.add_step('current_A', 0., (100., 100.))
 
+    # non-positive dt in tspan
+    with pytest.raises(ValueError):
+        expr.add_step('current_A', 0., (100., -1.))
+
+    with pytest.raises(ValueError):
+        expr.add_step('current_A', 0., (100., 0.))
+
     # wrong overall tyspan type
     with pytest.raises(TypeError):
         expr.add_step('current_A', 0., '3600.')
@@ -118,6 +125,12 @@ def test_add_step(expr):
     expr.add_step('current_A', 1., (3600., 1.), limits=('voltage_V', 3.))
 
     assert expr.steps[-1]['limits'] == ('voltage_V', 3.)
+
+    # numpy and int limit values are valid
+    limits = ('voltage_V', np.float32(3.), 'time_s', np.int64(10), 'soc', 0)
+    expr.add_step('current_A', 1., (3600., 1.), limits=limits)
+
+    assert expr.steps[-1]['limits'] == limits
 
     # test dynamic load
     expr.add_step('current_A', lambda t: 1., (3600., 1.))
