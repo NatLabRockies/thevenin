@@ -461,9 +461,10 @@ def _yaml_reader(filepath: os.PathLike) -> dict:
     ----------
     filepath : os.PathLike
         An absolute or relative path to a '.yaml' file. The extension will
-        be added if not included. If the file does not exist but its name
-        matches an internal resource (e.g., 'params.yaml'), the internal file
-        is used instead.
+        be added if not included. Bare file names given as strings (e.g.,
+        'params.yaml') that match an internal resource use the internal file
+        and issue a warning. To use a local file with the same name, include
+        a directory (e.g., './params.yaml') or pass a `pathlib.Path`.
 
     Returns
     -------
@@ -478,27 +479,25 @@ def _yaml_reader(filepath: os.PathLike) -> dict:
         File does not exist.
 
     """
-    filepath = pathlib.Path(filepath).resolve()
-    extension = filepath.suffix
+    is_bare_name = isinstance(filepath, str) and not os.path.dirname(filepath)
+    filepath = pathlib.Path(filepath)
 
-    if extension == '':
+    if filepath.suffix == '':
         filepath = filepath.with_suffix('.yaml')
-    elif extension != '.yaml':
+    elif filepath.suffix != '.yaml':
         raise ValueError("Invalid file. Only supports '.yaml' files.")
 
-    here = os.path.dirname(__file__)
-    resources = pathlib.Path(here).joinpath('_resources')
+    resources = pathlib.Path(__file__).parent / '_resources'
 
-    if filepath.exists():
-        pass
-    elif filepath.name in os.listdir(resources):
+    if is_bare_name and filepath.name in os.listdir(resources):
         _short_warn(f"Using the default parameter file '{filepath.name}'.")
         filepath = resources.joinpath(filepath.name)
-    else:
-        raise FileNotFoundError(f"{filepath=} does not exist.")
 
     def eval_constructor(loader, node):
         return eval(node.value)
+
+    if not filepath.exists():
+        raise FileNotFoundError(f"{filepath=} does not exist.")
 
     reader = YAML(typ='safe')
 

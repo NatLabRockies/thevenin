@@ -131,7 +131,7 @@ def test_sim_w_pathlike_input():
     assert sim.num_RC_pairs == params['num_RC_pairs']
 
 
-def test_local_yaml_overrides_default(tmp_path, monkeypatch):
+def test_local_yaml_paths_override_defaults(tmp_path, monkeypatch):
     from thevenin._basemodel import _yaml_reader
 
     resources = pathlib.Path(thev.__file__).parent.joinpath('_resources')
@@ -143,11 +143,19 @@ def test_local_yaml_overrides_default(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     tmp_path.joinpath('params.yaml').write_text(text)
 
+    # explicit relative paths and Path objects use the local file
     with warnings.catch_warnings():
         warnings.simplefilter('error')  # no default file warning
-        params = _yaml_reader('params.yaml')
+        params = _yaml_reader('./params.yaml')
+        assert params['soc0'] == 0.25
 
-    assert params['soc0'] == 0.25
+        params = _yaml_reader(pathlib.Path('params.yaml'))
+        assert params['soc0'] == 0.25
+
+    # bare names still prefer the internal resource, with a warning
+    with pytest.warns(UserWarning):
+        params = _yaml_reader('params.yaml')
+        assert params['soc0'] == 1.
 
 
 def test_sim_w_yaml_input(
