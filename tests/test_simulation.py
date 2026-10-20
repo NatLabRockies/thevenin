@@ -1,3 +1,4 @@
+import pathlib
 import warnings
 
 import pytest
@@ -10,28 +11,28 @@ from scipy.integrate import cumulative_trapezoid
 
 def dict_params(num_RC_pairs: int = 0) -> dict:
 
-    coeffs = np.array([84.6, -348.6, 592.3, -534.3, 275., -80.3, 12.8, 2.8])
+    coeffs = np.array([84.6, -348.6, 592.3, -534.3, 275.0, -80.3, 12.8, 2.8])
 
     params = {
         'num_RC_pairs': num_RC_pairs,
         'soc0': 0.5,
-        'capacity': 1.,
-        'ce': 1.,
-        'gamma': 0.,
+        'capacity': 1.0,
+        'ce': 1.0,
+        'gamma': 0.0,
         'mass': 0.5,
         'isothermal': False,
-        'Cp': 1150.,
-        'T_inf': 300.,
-        'h_therm': 12.,
-        'A_therm': 1.,
+        'Cp': 1150.0,
+        'T_inf': 300.0,
+        'h_therm': 12.0,
+        'A_therm': 1.0,
         'ocv': lambda soc: np.polyval(coeffs, soc),
-        'M_hyst': lambda soc: 0.,
-        'R0': lambda soc, T_cell: 0.05 + 0.05*soc - T_cell/1e4,
+        'M_hyst': lambda soc: 0.0,
+        'R0': lambda soc, T_cell: 0.05 + 0.05 * soc - T_cell / 1e4,
     }
 
     for j in range(1, num_RC_pairs + 1):
-        params['R' + str(j)] = lambda soc, T: 0.01 + 0.01*soc - T/3e4
-        params['C' + str(j)] = lambda soc, T: 10. + 10.*soc - T/3e1
+        params['R' + str(j)] = lambda soc, T: 0.01 + 0.01 * soc - T / 3e4
+        params['C' + str(j)] = lambda soc, T: 10.0 + 10.0 * soc - T / 3e1
 
     return params
 
@@ -57,42 +58,45 @@ def sim_2RC():
 @pytest.fixture(scope='function')
 def constant_steps():
     expr = thev.Experiment()
-    expr.add_step('current_A', 1., (3600., 1.), limits=('voltage_V', 3.))
-    expr.add_step('current_C', 0., (600., 1.))
-    expr.add_step('current_A', -1., (3600., 1.), limits=('voltage_V', 4.3))
-    expr.add_step('voltage_V', 4.3, (600., 1.))
-    expr.add_step('power_W', 1., (600., 1.), limits=('voltage_V', 3.))
-    expr.add_step('current_A', 0., 600.)  # solver picks time steps
+    expr.add_step('current_A', 1.0, (3600.0, 1.0), limits=('voltage_V', 3.0))
+    expr.add_step('current_C', 0.0, (600.0, 1.0))
+    expr.add_step('current_A', -1.0, (3600.0, 1.0), limits=('voltage_V', 4.3))
+    expr.add_step('voltage_V', 4.3, (600.0, 1.0))
+    expr.add_step('power_W', 1.0, (600.0, 1.0), limits=('voltage_V', 3.0))
+    expr.add_step('current_A', 0.0, 600.0)  # solver picks time steps
 
     return expr
 
 
 @pytest.fixture(scope='function')
 def dynamic_current():
-    def load(t): return np.sin(2.*np.pi*t / 120.)
+    def load(t):
+        return np.sin(2.0 * np.pi * t / 120.0)
 
     expr = thev.Experiment()
-    expr.add_step('current_A', load, (600., 1.))
+    expr.add_step('current_A', load, (600.0, 1.0))
 
     return expr
 
 
 @pytest.fixture(scope='function')
 def dynamic_voltage():
-    def load(t): return 3.8 + 10e-3*np.sin(2.*np.pi*t / 120.)
+    def load(t):
+        return 3.8 + 10e-3 * np.sin(2.0 * np.pi * t / 120.0)
 
     expr = thev.Experiment()
-    expr.add_step('voltage_V', load, (600., 1.))
+    expr.add_step('voltage_V', load, (600.0, 1.0))
 
     return expr
 
 
 @pytest.fixture(scope='function')
 def dynamic_power():
-    def load(t): return np.sin(2.*np.pi*t / 120.)
+    def load(t):
+        return np.sin(2.0 * np.pi * t / 120.0)
 
     expr = thev.Experiment()
-    expr.add_step('power_W', load, (600., 1.))
+    expr.add_step('power_W', load, (600.0, 1.0))
 
     return expr
 
@@ -109,9 +113,46 @@ def test_bad_initialization():
     with pytest.raises(ValueError):
         _ = thev.Simulation(params)
 
+    # missing required key
+    params = dict_params()
+    _ = params.pop('soc0')
+    with pytest.raises(ValueError):
+        _ = thev.Simulation(params)
 
-def test_sim_w_yaml_input(constant_steps, dynamic_current, dynamic_voltage,
-                          dynamic_power):
+
+def test_sim_w_pathlike_input():
+    from thevenin._basemodel import _yaml_reader
+
+    resources = pathlib.Path(thev.__file__).parent.joinpath('_resources')
+
+    sim = thev.Simulation(resources.joinpath('params.yaml'))
+    params = _yaml_reader(resources.joinpath('params.yaml'))
+
+    assert sim.num_RC_pairs == params['num_RC_pairs']
+
+
+def test_local_yaml_overrides_default(tmp_path, monkeypatch):
+    from thevenin._basemodel import _yaml_reader
+
+    resources = pathlib.Path(thev.__file__).parent.joinpath('_resources')
+
+    text = resources.joinpath('params.yaml').read_text()
+    text = text.replace('soc0: 1.', 'soc0: 0.25')
+    assert 'soc0: 0.25' in text
+
+    monkeypatch.chdir(tmp_path)
+    tmp_path.joinpath('params.yaml').write_text(text)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter('error')  # no default file warning
+        params = _yaml_reader('params.yaml')
+
+    assert params['soc0'] == 0.25
+
+
+def test_sim_w_yaml_input(
+    constant_steps, dynamic_current, dynamic_voltage, dynamic_power
+):
 
     # using default file
     with pytest.warns(UserWarning):
@@ -126,17 +167,18 @@ def test_sim_w_yaml_input(constant_steps, dynamic_current, dynamic_voltage,
         sim = thev.Simulation('params.yaml')
 
     soln = sim.run(constant_steps)
-    assert soln.success
-    # assert any(soln.i_events)
+    assert all(soln.success)
+    assert soln.i_events is not None
+    assert isinstance(soln.i_events, list)
 
     soln = sim.run(dynamic_current)
-    assert soln.success
+    assert all(soln.success)
 
     soln = sim.run(dynamic_voltage)
-    assert soln.success
+    assert all(soln.success)
 
     soln = sim.run(dynamic_power)
-    assert soln.success
+    assert all(soln.success)
 
 
 def test_bad_yaml_inputs():
@@ -152,17 +194,17 @@ def test_bad_yaml_inputs():
     # missing attrs
     params = dict_params(1)
     _ = params.pop('R1')
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         _ = thev.Simulation(params)
 
     params = dict_params(1)
     _ = params.pop('C1')
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         _ = thev.Simulation(params)
 
     # extra attrs
     params = dict_params(1)
-    params['R2'] = lambda soc, T_cell: 0.01 + 0.01*soc - T_cell/3e4
+    params['R2'] = lambda soc, T_cell: 0.01 + 0.01 * soc - T_cell / 3e4
     with pytest.raises(ValueError):
         _ = thev.Simulation(params)
 
@@ -189,7 +231,7 @@ def test_preprocessor_raises(dynamic_current):
 
     # extra attrs - warning
     sim = thev.Simulation(dict_params(1))
-    sim.R2 = lambda soc, T_cell: 0.01 + 0.01*soc - T_cell/3e4
+    sim.R2 = lambda soc, T_cell: 0.01 + 0.01 * soc - T_cell / 3e4
     with pytest.warns(UserWarning):
         sim.pre()
 
@@ -227,8 +269,8 @@ def test_preprocessing_state0_options(sim_2RC, constant_steps):
     # given a TransientState
     state = thev.TransientState(
         soc=0.5,
-        T_cell=400.,
-        hyst=10.,
+        T_cell=400.0,
+        hyst=10.0,
         eta_j=None,
     )
     with pytest.raises(ValueError):  # incompatible num_RC_pairs
@@ -236,8 +278,8 @@ def test_preprocessing_state0_options(sim_2RC, constant_steps):
 
     state = thev.TransientState(
         soc=0.5,
-        T_cell=400.,
-        hyst=10.,
+        T_cell=400.0,
+        hyst=10.0,
         eta_j=[1e-3, 1e-3],
     )
 
@@ -272,6 +314,53 @@ def test_run_step(sim_2RC, constant_steps):
     npt.assert_allclose(svdot0, sim_2RC._svdot0)
 
 
+def test_time_limits_use_total_time(sim_1RC):
+
+    expr = thev.Experiment()
+    expr.add_step('current_A', 0.0, (100.0, 1.0))
+    expr.add_step('current_A', 0.0, (100.0, 1.0))
+    expr.add_step(
+        'current_A', 0.0, (500.0, 1.0), limits=('time_s', 250.0), max_step=1.0
+    )
+
+    # stitched solutions include a small t_shift between steps
+    soln = sim_1RC.run(expr, t_shift=0.0)
+
+    step = soln.get_steps(2)
+    npt.assert_allclose(step.t_events, 50.0, atol=1.0)
+    npt.assert_allclose(soln.t[-1], 250.0, atol=1.0)
+
+    # total time also resets between runs
+    soln = sim_1RC.run(expr, t_shift=0.0)
+    npt.assert_allclose(soln.t[-1], 250.0, atol=1.0)
+
+
+def test_limits_are_exact(sim_1RC):
+
+    expr = thev.Experiment()
+    expr.add_step('current_C', 1.0, (4000.0, 10.0), limits=('voltage_V', 3.6))
+    expr.add_step('current_C', -1.0, (4000.0, 10.0), limits=('soc', 0.9))
+
+    soln = sim_1RC.run(expr)
+
+    discharge = soln.get_steps(0)
+    npt.assert_allclose(discharge.vars['voltage_V'][-1], 3.6, atol=0.01)
+
+    charge = soln.get_steps(1)
+    npt.assert_allclose(charge.vars['soc'][-1], 0.9, atol=0.01)
+
+
+def test_simulation_subclass(dynamic_current):
+
+    class CustomSimulation(thev.Simulation):
+        pass
+
+    sim = CustomSimulation(dict_params(1))
+    soln = sim.run(dynamic_current)
+
+    assert all(soln.success)
+
+
 def test_run_options(sim_0RC, constant_steps):
     sv0 = sim_0RC._sv0.copy()
     svdot0 = sim_0RC._svdot0.copy()
@@ -288,15 +377,15 @@ def test_run_options(sim_0RC, constant_steps):
 def test_sim_w_multistep_experiment(sim_0RC, sim_1RC, sim_2RC, constant_steps):
 
     soln = sim_0RC.run(constant_steps)
-    assert soln.success
+    assert all(soln.success)
     assert any(status == 2 for status in soln.status)
 
     soln = sim_1RC.run(constant_steps)
-    assert soln.success
+    assert all(soln.success)
     assert any(status == 2 for status in soln.status)
 
     soln = sim_2RC.run(constant_steps)
-    assert soln.success
+    assert all(soln.success)
     assert any(status == 2 for status in soln.status)
 
     # solver-chosen time steps works
@@ -307,47 +396,47 @@ def test_sim_w_multistep_experiment(sim_0RC, sim_1RC, sim_2RC, constant_steps):
 def test_sim_w_dynamic_current(sim_0RC, sim_1RC, sim_2RC, dynamic_current):
 
     soln = sim_0RC.run(dynamic_current)
-    assert soln.success
+    assert all(soln.success)
 
     soln = sim_1RC.run(dynamic_current)
-    assert soln.success
+    assert all(soln.success)
 
     soln = sim_2RC.run(dynamic_current)
-    assert soln.success
+    assert all(soln.success)
 
 
 def test_sim_w_dynamic_voltage(sim_0RC, sim_1RC, sim_2RC, dynamic_voltage):
 
     soln = sim_0RC.run(dynamic_voltage)
-    assert soln.success
+    assert all(soln.success)
 
     soln = sim_1RC.run(dynamic_voltage)
-    assert soln.success
+    assert all(soln.success)
 
     soln = sim_2RC.run(dynamic_voltage)
-    assert soln.success
+    assert all(soln.success)
 
 
 def test_sim_w_dynamic_power(sim_0RC, sim_1RC, sim_2RC, dynamic_power):
 
     soln = sim_0RC.run(dynamic_power)
-    assert soln.success
+    assert all(soln.success)
 
     soln = sim_1RC.run(dynamic_power)
-    assert soln.success
+    assert all(soln.success)
 
     soln = sim_2RC.run(dynamic_power)
-    assert soln.success
+    assert all(soln.success)
 
 
 def test_resting_experiment(sim_2RC):
 
     expr = thev.Experiment()
-    expr.add_step('current_A', 0., (100., 1.))
+    expr.add_step('current_A', 0.0, (100.0, 1.0))
 
     soln = sim_2RC.run(expr)
 
-    assert soln.success
+    assert all(soln.success)
     npt.assert_allclose(
         soln.vars['voltage_V'],
         soln.vars['voltage_V'][0],
@@ -359,10 +448,10 @@ def test_current_sign_convention(sim_2RC, constant_steps):
     soln = sim_2RC.run(constant_steps)
 
     discharge = soln.get_steps(0)
-    assert all(np.diff(discharge.vars['voltage_V']) < 0.)
+    assert all(np.diff(discharge.vars['voltage_V']) < 0.0)
 
     charge = soln.get_steps(2)
-    assert all(np.diff(charge.vars['voltage_V']) > 0.)
+    assert all(np.diff(charge.vars['voltage_V']) > 0.0)
 
 
 def test_constant_V_shift_w_constant_R0(sim_0RC, constant_steps):
@@ -411,18 +500,20 @@ def test_isothermal_flag(sim_2RC, constant_steps):
 def test_coulombic_efficiency():
 
     sim_100 = thev.Simulation()
-    sim_100.soc0 = 1.
-    sim_100.ce = 1.
+    sim_100.soc0 = 1.0
+    sim_100.ce = 1.0
     sim_100.pre()
 
     sim_80 = thev.Simulation()
-    sim_80.soc0 = 1.
+    sim_80.soc0 = 1.0
     sim_80.ce = 0.8
     sim_80.pre()
 
     expr = thev.Experiment()
-    expr.add_step('current_C', 0.05, (3600.*30., 10.), limits=('soc', 0.))
-    expr.add_step('current_C', -0.05, (3600.*30., 10.), limits=('soc', 1.))
+    expr.add_step('current_C', 0.05, (3600.0 * 30.0, 10.0), limits=('soc', 0.0))
+    expr.add_step(
+        'current_C', -0.05, (3600.0 * 30.0, 10.0), limits=('soc', 1.0)
+    )
 
     # check discharge capacity / charge capacity ~ 1.0
     soln_100 = sim_100.run(expr)
@@ -431,10 +522,12 @@ def test_coulombic_efficiency():
     dis = soln_100.get_steps(0)
     chg = soln_100.get_steps(1)
 
-    cap_dis = cumulative_trapezoid(dis.vars['current_A'], dis.vars['time_h'],
-                                   initial=0.)
-    cap_chg = cumulative_trapezoid(chg.vars['current_A'], chg.vars['time_h'],
-                                   initial=0.)
+    cap_dis = cumulative_trapezoid(
+        dis.vars['current_A'], dis.vars['time_h'], initial=0.0
+    )
+    cap_chg = cumulative_trapezoid(
+        chg.vars['current_A'], chg.vars['time_h'], initial=0.0
+    )
 
     assert round(abs(cap_dis).max() / abs(cap_chg).max(), 1) == 1.0
 
@@ -445,10 +538,12 @@ def test_coulombic_efficiency():
     dis = soln_80.get_steps(0)
     chg = soln_80.get_steps(1)
 
-    cap_dis = cumulative_trapezoid(dis.vars['current_A'], dis.vars['time_h'],
-                                   initial=0.)
-    cap_chg = cumulative_trapezoid(chg.vars['current_A'], chg.vars['time_h'],
-                                   initial=0.)
+    cap_dis = cumulative_trapezoid(
+        dis.vars['current_A'], dis.vars['time_h'], initial=0.0
+    )
+    cap_chg = cumulative_trapezoid(
+        chg.vars['current_A'], chg.vars['time_h'], initial=0.0
+    )
 
     assert round(abs(cap_dis).max() / abs(cap_chg).max(), 1) == 0.8
 
@@ -457,31 +552,31 @@ def test_coulombic_efficiency():
 def test_hysteresis():
 
     sim_woh = thev.Simulation()  # without hysteresis
-    sim_woh.soc0 = 1.
+    sim_woh.soc0 = 1.0
     sim_woh.pre()
 
-    assert sim_woh.gamma == 0.
-    assert sim_woh.M_hyst(0.) == 0.
+    assert sim_woh.gamma == 0.0
+    assert sim_woh.M_hyst(0.0) == 0.0
 
     sim_wh = thev.Simulation()  # with hysteresis
-    sim_wh.soc0 = 1.
-    sim_wh.gamma = 50.
+    sim_wh.soc0 = 1.0
+    sim_wh.gamma = 50.0
     sim_wh.M_hyst = lambda soc: 0.07
     sim_wh.pre()
 
-    assert sim_wh.gamma == 50.
-    assert sim_wh.M_hyst(0.) == 0.07
+    assert sim_wh.gamma == 50.0
+    assert sim_wh.M_hyst(0.0) == 0.07
 
-    discharge = thev.Experiment(max_step=10.)
-    discharge.add_step('current_C', 1., (3600., 10.), limits=('soc', 0.5))
-    discharge.add_step('current_A', 0., (600., 10.))
+    discharge = thev.Experiment(max_step=10.0)
+    discharge.add_step('current_C', 1.0, (3600.0, 10.0), limits=('soc', 0.5))
+    discharge.add_step('current_A', 0.0, (600.0, 10.0))
 
-    charge = thev.Experiment(max_step=10.)
-    charge.add_step('current_C', -1., (3600., 10.), limits=('soc', 0.8))
-    charge.add_step('current_A', 0., (600., 10.))
+    charge = thev.Experiment(max_step=10.0)
+    charge.add_step('current_C', -1.0, (3600.0, 10.0), limits=('soc', 0.8))
+    charge.add_step('current_A', 0.0, (600.0, 10.0))
 
     soln = sim_woh.run(discharge, reset_state=False)
-    npt.assert_allclose(soln.vars['hysteresis_V'], 0., atol=1e-9)
+    npt.assert_allclose(soln.vars['hysteresis_V'], 0.0, atol=1e-9)
     npt.assert_almost_equal(
         soln.vars['voltage_V'][-1],
         sim_woh.ocv(0.5),
@@ -489,7 +584,7 @@ def test_hysteresis():
     )
 
     soln = sim_woh.run(charge, reset_state=False)
-    npt.assert_allclose(soln.vars['hysteresis_V'], 0., atol=1e-9)
+    npt.assert_allclose(soln.vars['hysteresis_V'], 0.0, atol=1e-9)
     npt.assert_almost_equal(
         soln.vars['voltage_V'][-1],
         sim_woh.ocv(0.8),
@@ -516,7 +611,7 @@ def test_hysteresis():
     step = soln.get_steps(0)
     npt.assert_allclose(
         step.vars['current_A'],
-        -1.*sim_wh.capacity,
+        -1.0 * sim_wh.capacity,
         rtol=1e-3,
     )
 
