@@ -102,6 +102,12 @@ def test_step_function():
 
     assert demand(np.nan) == yp[-1]
 
+    # integer inputs still support NaN outputs
+    demand = thev.demands.StepFunction(tp, yp, 0)
+
+    assert np.isnan(demand(np.nan))
+    assert repr(demand) == 'StepFunction(num_steps=3)'
+
 
 def test_ramped_steps():
 
@@ -133,6 +139,8 @@ def test_ramped_steps():
     yp = np.array([-1, 5, 10])
 
     demand = thev.demands.RampedSteps(tp, yp, 1e-3)
+
+    assert repr(demand) == 'RampedSteps(num_steps=3, t_ramp=1.00e-03)'
 
     t_test = np.array([-1, 0.5, 3, 10])
     y_test = np.array([0, -1, 5, 10])
