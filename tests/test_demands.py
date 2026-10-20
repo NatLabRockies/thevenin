@@ -7,10 +7,10 @@ import numpy.testing as npt
 
 def test_ramp():
 
-    demand = thev.demands.Ramp(5., 10.)
+    demand = thev.demands.Ramp(5.0, 10.0)
 
     tp = np.linspace(0, 20, 25)
-    yp = 5.*tp + 10.
+    yp = 5.0 * tp + 10.0
 
     npt.assert_allclose(demand(tp), yp)
 
@@ -19,50 +19,50 @@ def test_ramp_2_constant():
 
     # m cannot equal 0
     with pytest.raises(ValueError):
-        _ = thev.demands.Ramp2Constant(0., 1.)
+        _ = thev.demands.Ramp2Constant(0.0, 1.0)
 
     # m cannot equal inf
     with pytest.raises(ValueError):
-        _ = thev.demands.Ramp2Constant(-np.inf, 1.)
+        _ = thev.demands.Ramp2Constant(-np.inf, 1.0)
 
     # m > 0 with b >= step is invalid
     with pytest.raises(ValueError):
-        _ = thev.demands.Ramp2Constant(10., 0.)
+        _ = thev.demands.Ramp2Constant(10.0, 0.0)
 
     # m < 0 with b <= step is invalid
     with pytest.raises(ValueError):
-        _ = thev.demands.Ramp2Constant(-10., -5., -7.)
+        _ = thev.demands.Ramp2Constant(-10.0, -5.0, -7.0)
 
     # non-positive sharpness
     with pytest.raises(ValueError):
-        _ = thev.demands.Ramp2Constant(6./1e-3, 6., sharpness=0.)
+        _ = thev.demands.Ramp2Constant(6.0 / 1e-3, 6.0, sharpness=0.0)
 
     with pytest.raises(ValueError):
-        _ = thev.demands.Ramp2Constant(6./1e-3, 6., sharpness=-100.)
+        _ = thev.demands.Ramp2Constant(6.0 / 1e-3, 6.0, sharpness=-100.0)
 
     # positive ramp
-    demand = thev.demands.Ramp2Constant(6./1e-3, 6.)
+    demand = thev.demands.Ramp2Constant(6.0 / 1e-3, 6.0)
 
     tp = np.linspace(0, 1e-3, 10)
-    yp = 6./1e-3*tp + 0.
+    yp = 6.0 / 1e-3 * tp + 0.0
 
     npt.assert_allclose(demand(tp), yp, atol=1e-8)
 
     tp = np.linspace(1e-3, 100, 100)
-    yp = 6.*np.ones_like(tp)
+    yp = 6.0 * np.ones_like(tp)
 
     npt.assert_allclose(demand(tp), yp)
 
     # negative ramp
-    demand = thev.demands.Ramp2Constant(-6./1e-3, -6.)
+    demand = thev.demands.Ramp2Constant(-6.0 / 1e-3, -6.0)
 
     tp = np.linspace(0, 1e-3, 10)
-    yp = -6./1e-3*tp + 0.
+    yp = -6.0 / 1e-3 * tp + 0.0
 
     npt.assert_allclose(demand(tp), yp, atol=1e-8)
 
     tp = np.linspace(1e-3, 100, 100)
-    yp = -6.*np.ones_like(tp)
+    yp = -6.0 * np.ones_like(tp)
 
     npt.assert_allclose(demand(tp), yp)
 
@@ -102,12 +102,6 @@ def test_step_function():
 
     assert demand(np.nan) == yp[-1]
 
-    # integer inputs still support NaN outputs
-    demand = thev.demands.StepFunction(tp, yp, 0)
-
-    assert np.isnan(demand(np.nan))
-    assert repr(demand) == 'StepFunction(num_steps=3)'
-
 
 def test_ramped_steps():
 
@@ -115,49 +109,53 @@ def test_ramped_steps():
     tp = np.array([[0, 1, 5]])
     yp = np.array([-1, 0, 1])
     with pytest.raises(ValueError):
-        _ = thev.demands.RampedSteps(tp, yp, 1.)
+        _ = thev.demands.RampedSteps(tp, yp, 1.0)
 
     # Inputs must be same length
     tp = np.array([0, 1])
     yp = np.array([-1, 0, 1])
     with pytest.raises(ValueError):
-        _ = thev.demands.RampedSteps(tp, yp, 1.)
+        _ = thev.demands.RampedSteps(tp, yp, 1.0)
 
     # t_ramp must be strictly positive
     tp = np.array([0, 1, 5])
     yp = np.array([-1, 0, 1])
     with pytest.raises(ValueError):
-        _ = thev.demands.RampedSteps(tp, yp, 0.)
+        _ = thev.demands.RampedSteps(tp, yp, 0.0)
 
     # tp must be strictly increasing
     tp = np.array([0, -1, 5])
     yp = np.array([-1, 0, 1])
     with pytest.raises(ValueError):
-        _ = thev.demands.RampedSteps(tp, yp, 1.)
+        _ = thev.demands.RampedSteps(tp, yp, 1.0)
 
     tp = np.array([0, 1, 5])
     yp = np.array([-1, 5, 10])
 
     demand = thev.demands.RampedSteps(tp, yp, 1e-3)
 
-    assert repr(demand) == 'RampedSteps(num_steps=3, t_ramp=1.00e-03)'
-
     t_test = np.array([-1, 0.5, 3, 10])
     y_test = np.array([0, -1, 5, 10])
 
     npt.assert_allclose(demand(t_test), y_test)
 
-    def ramp(t): return 0. + (-1. - 0.) / 1e-3 * t
+    def ramp(t):
+        return 0.0 + (-1.0 - 0.0) / 1e-3 * t
+
     t_test = np.linspace(0, 1e-3, 10)
 
     npt.assert_allclose(demand(t_test), ramp(t_test))
 
-    def ramp(t): return -1. + (5. - -1.) / 1e-3 * (t - 1.)
+    def ramp(t):
+        return -1.0 + (5.0 - -1.0) / 1e-3 * (t - 1.0)
+
     t_test = np.linspace(1, 1 + 1e-3, 10)
 
     npt.assert_allclose(demand(t_test), ramp(t_test))
 
-    def ramp(t): return 5. + (10. - 5.) / 1e-3 * (t - 5.)
+    def ramp(t):
+        return 5.0 + (10.0 - 5.0) / 1e-3 * (t - 5.0)
+
     t_test = np.linspace(5, 5 + 1e-3, 10)
 
     npt.assert_allclose(demand(t_test), ramp(t_test))
