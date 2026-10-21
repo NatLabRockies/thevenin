@@ -155,7 +155,10 @@ class Prediction(BaseModel):
 
         self._ptr = ptr
 
-        self.set_options()
+        if not hasattr(self, '_options'):
+            self._options = {}
+
+        self.set_options(**self._options)
 
     def set_options(self, **options) -> None:
         """
@@ -166,7 +169,7 @@ class Prediction(BaseModel):
         **options : dict, optional
             CVODESolver keyword arguments that span all steps. You can re-run
             this method between prediction steps if you need different settings
-            per step.
+            per step. Options persist through calls to `pre()`.
 
         See Also
         --------
@@ -176,6 +179,8 @@ class Prediction(BaseModel):
 
         """
         from .solvers import CVODESolver
+
+        self._options = options.copy()
 
         self._userdata = {}
         options = {'userdata': self._userdata, **options}

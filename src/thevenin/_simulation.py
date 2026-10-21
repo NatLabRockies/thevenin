@@ -33,6 +33,8 @@ class Simulation(BaseModel):
 
     """
 
+    _is_dae = True
+
     def pre(self, state0: bool | Solution | TransientState = True) -> None:
         """
         Pre-process and prepare the model for running experiments.
@@ -197,7 +199,7 @@ class Simulation(BaseModel):
 
         soln = StepSolution(self, ida_soln, timer)
 
-        self._t0 = soln.t[-1]
+        self._t0 += soln.t[-1]
         self._sv0 = soln.y[-1].copy()
         self._svdot0 = soln.yp[-1].copy()
 
@@ -248,6 +250,8 @@ class Simulation(BaseModel):
 
         """
         from ._solutions import CycleSolution
+
+        self._t0 = 0.0
 
         solns = []
         for i in range(expr.num_steps):

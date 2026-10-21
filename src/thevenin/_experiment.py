@@ -141,6 +141,8 @@ class Experiment:
         TypeError
             'tspan' tuple values must be type float.
         ValueError
+            'tspan[1]' must be strictly positive when given a tuple.
+        ValueError
             'tspan[1]' must be less than 'tspan[0]' when given a tuple.
         ValueError
             'tspan' array must be one-dimensional.
@@ -189,10 +191,11 @@ class Experiment:
                 raise ValueError("'tspan' tuple must be length 2.")
             elif not all(isinstance(val, Real) for val in tspan):
                 raise TypeError("'tspan' tuple values must be type float.")
+            elif tspan[1] <= 0.0:
+                raise ValueError("'tspan[1]' must be strictly positive.")
             elif tspan[1] >= tspan[0]:
                 raise ValueError(
-                    "'tspan[1]' must be less than 'tspan[0]'"
-                    " when given a tuple."
+                    "'tspan[1]' must be less than 'tspan[0]' for tuples."
                 )
 
             tmax, dt = tspan
@@ -286,19 +289,18 @@ def _check_limits(limits: tuple[str, float]) -> None:
     ]
 
     if limits is None:
-        pass
-    elif len(limits) % 2 != 0:
+        return
+
+    if len(limits) % 2 != 0:
         raise ValueError("'limits' length must be even.")
-    else:
-        for i in range(len(limits) // 2):
-            name = limits[2 * i]
-            value = limits[2 * i + 1]
+    for i in range(len(limits) // 2):
+        name = limits[2 * i]
+        value = limits[2 * i + 1]
 
-            if name not in valid:
-                raise ValueError(
-                    f"The limit name '{name}' is invalid; valid"
-                    f" values are {valid}."
-                )
+        if name not in valid:
+            raise ValueError(
+                f"The limit name '{name}' is invalid; valid values are {valid}."
+            )
 
-            elif not isinstance(value, (int, float)):
-                raise TypeError(f"Limit '{name}' value must be type float.")
+        elif not isinstance(value, Real):
+            raise TypeError(f"Limit '{name}' value must be type float.")

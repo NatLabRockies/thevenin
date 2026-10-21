@@ -29,7 +29,7 @@ def test_prediction_steps_against_simulation():
     expr.add_step('current_C', 1., (3600., 1.))
 
     soln = sim.run(expr)
-    assert soln.success
+    assert all(soln.success)
 
     # step-by-step prediction comparison
     state = thev.TransientState(
@@ -133,6 +133,18 @@ def test_incompatible_state():
 
     with pytest.raises(ValueError):
         _ = pred.take_step(state, 0., 1.)
+
+
+def test_options_persist_through_pre():
+
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', UserWarning)
+        pred = thev.Prediction()
+
+    pred.set_options(rtol=1e-9)
+    pred.pre()
+
+    assert pred._options == {'rtol': 1e-9}
 
 
 def test_to_simulation():

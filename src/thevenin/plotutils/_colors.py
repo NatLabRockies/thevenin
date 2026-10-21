@@ -1,15 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from numpy import ndarray
+import numpy as np
+import matplotlib as mpl
 
 
 def get_colors(
     size: int,
-    data: ndarray = None,
-    norm: ndarray = None,
+    data: np.ndarray = None,
+    norm: np.ndarray = None,
     alpha: float = 1.0,
     cmap: str = 'jet',
 ):
@@ -29,7 +27,7 @@ def get_colors(
         the output. By default, spacing is equal and sorting matches 'cmap'.
     norm : array_like[float] or None, optional
         An array-like (min, max) pair that normalizes the colormap to 'data'.
-        By default (0, size) if 'data=None' or min/max of 'data' otherwise.
+        By default (0, size - 1) if 'data=None' or min/max of 'data' otherwise.
     alpha : float, optional
         Transparency to apply over the colormap. Must be in the range [0, 1].
         The default is 1.
@@ -49,9 +47,6 @@ def get_colors(
         'norm' length must equal 2.
 
     """
-    import numpy as np
-    import matplotlib as mpl
-
     if data is None:
         data = np.arange(size)
     elif len(data) != size:
@@ -65,7 +60,7 @@ def get_colors(
     cmap = mpl.colormaps[cmap]
 
     norm = mpl.colors.Normalize(vmin=norm[0], vmax=norm[1])
-    sm = mpl.pyplot.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm = mpl.cm.ScalarMappable(cmap=cmap, norm=norm)
 
     colors = [sm.to_rgba(x, alpha=alpha) for x in data]
 

@@ -15,7 +15,9 @@ from ruamel.yaml import YAML, SafeConstructor, add_constructor
 class BaseModel(ABC):
     """Abstract BaseModel for Simulation and Prediction."""
 
-    def __init__(self, params: dict | str = 'params.yaml'):
+    _is_dae: bool = False
+
+    def __init__(self, params: dict | os.PathLike = 'params.yaml'):
         """
         Models can be constructed using either a dictionary or a '.yaml' file.
         Note that the number of Rj and Cj attributes must be consistent with
@@ -24,11 +26,10 @@ class BaseModel(ABC):
 
         Parameters
         ----------
-        params : dict | str
+        params : dict or os.PathLike
             Mapping of model parameter names to their values. Can be either
-            a dict or absolute/relative file path to a yaml file (str). The
-            keys/value pair descriptions are given below. The default uses an
-            internal yaml file.
+            a dict or absolute/relative file path to a yaml file. The key/value
+            pair descriptions are below. The default uses an internal yaml file.
 
             ============= ========================== ================
             Key           Value                      *type*, units
@@ -54,7 +55,9 @@ class BaseModel(ABC):
         Raises
         ------
         TypeError
-            'params' must be type dict or str.
+            'params' must be type dict or os.PathLike.
+        ValueError
+            'params' is missing required keys.
         ValueError
             'params' contains invalid and/or excess key/value pairs.
 
@@ -64,7 +67,9 @@ class BaseModel(ABC):
         like `f(soc: float) -> float`, where 'soc' is the state of charge.
         All other properties that require callables (e.g., R0, Rj, and Cj) need
         signatures like `f(soc: float, T_cell: float) -> float`, with 'T_cell'
-        being the cell temperature in K.
+        being the cell temperature in K. Callables that also accept arrays are
+        preferred since solution post-processing can then be vectorized, but
+        scalar-only callables are also supported.
 
         Rj and Cj are not real property names. These are used generally in the
         documentation. If `num_RC_pairs=1` then in addition to R0, you should
@@ -82,8 +87,12 @@ class BaseModel(ABC):
         """
         if isinstance(params, dict):
             params = params.copy()
-        elif isinstance(params, str):
+        elif isinstance(params, (str, os.PathLike)):
             params = _yaml_reader(params)
+        else:
+            raise TypeError("'params' must be type dict or os.PathLike.")
+
+        _check_missing_keys(params)
 
         self._repr_keys = [
             'num_RC_pairs',
@@ -115,9 +124,6 @@ class BaseModel(ABC):
         self.R0 = params.pop('R0')
 
         for j in range(1, self.num_RC_pairs + 1):
-            assert 'R' + str(j) in params, f"'params' is missing R{str(j)}"
-            assert 'C' + str(j) in params, f"'params' is missing C{str(j)}"
-
             setattr(self, 'R' + str(j), params.pop('R' + str(j)))
             setattr(self, 'C' + str(j), params.pop('C' + str(j)))
 
@@ -146,16 +152,9 @@ class BaseModel(ABC):
         """
         keys = self._repr_keys
         values = [getattr(self, k) for k in keys]
-
         summary = "\n    ".join([f"{k}={v}," for k, v in zip(keys, values)])
-        readable = f"{self.classname}(\n    {summary}\n)"
 
-        return readable
-
-    @property
-    def classname(self) -> str:
-        """The name of the class."""
-        return type(self).__name__
+        return f"{type(self).__name__}(\n    {summary}\n)"
 
     @property
     def num_RC_pairs(self) -> int:
@@ -195,8 +194,8 @@ class BaseModel(ABC):
 
         if missing_attrs:
             raise AttributeError(
-                f"'{self.classname}' missing attrs {missing_attrs}"
-                " to be consistent with 'num_RC_pairs'."
+                f"Missing attrs: {missing_attrs} are required for the model to"
+                " be consistent with 'num_RC_pairs'."
             )
 
         extra_attrs = []
@@ -259,11 +258,11 @@ class BaseModel(ABC):
         alpha_inv = 1.0 / (self.mass * self.Cp * self._T_ref)
 
         # current, voltage, and power - different for Simulation/Prediction
-        if self.classname == 'Simulation':
+        if self._is_dae:
             voltage = sv[ptr['V_cell']]
             current = calculated_current(voltage, ocv, hyst, eta_j, R0)
 
-        elif self.classname == 'Prediction':
+        else:
             current = userdata['current'](t)
             voltage = calculated_voltage(current, ocv, hyst, eta_j, R0)
 
@@ -293,7 +292,7 @@ class BaseModel(ABC):
             rhs[pj] = -sv[pj] / (Rj * Cj) + current / Cj
 
         # cell voltage (algebraic) - only if using Simulation, not Prediction
-        if self.classname == 'Simulation':
+        if self._is_dae:
             mode = userdata['mode']
             units = userdata['units']
             value = userdata['value']
@@ -406,7 +405,52 @@ def calculated_voltage(current, ocv, hyst, eta_j, R0) -> float | np.ndarray:
         raise ValueError("Dimension error in calculating voltage.")
 
 
-def _yaml_reader(file: str) -> dict:
+def _check_missing_keys(params: dict) -> None:
+    """
+    Check that all required parameters are present.
+
+    Parameters
+    ----------
+    params : dict
+        Mapping of model parameter names to their values.
+
+    Returns
+    -------
+    None.
+
+    Raises
+    ------
+    ValueError
+        'params' is missing required keys.
+
+    """
+    required = [
+        'num_RC_pairs',
+        'soc0',
+        'capacity',
+        'ce',
+        'gamma',
+        'mass',
+        'isothermal',
+        'Cp',
+        'T_inf',
+        'h_therm',
+        'A_therm',
+        'ocv',
+        'M_hyst',
+        'R0',
+    ]
+
+    num_RC_pairs = params.get('num_RC_pairs', 0)
+    for j in range(1, num_RC_pairs + 1):
+        required.extend(['R' + str(j), 'C' + str(j)])
+
+    missing_keys = [k for k in required if k not in params]
+    if missing_keys:
+        raise ValueError(f"'params' is missing required keys: {missing_keys}")
+
+
+def _yaml_reader(filepath: os.PathLike) -> dict:
     """
     Read a yaml file.
 
@@ -415,9 +459,12 @@ def _yaml_reader(file: str) -> dict:
 
     Parameters
     ----------
-    file : str
+    filepath : os.PathLike
         An absolute or relative path to a '.yaml' file. The extension will
-        be added if not included.
+        be added if not included. Bare file names given as strings (e.g.,
+        'params.yaml') that match an internal resource use the internal file
+        and issue a warning. To use a local file with the same name, include
+        a directory (e.g., './params.yaml') or pass a `pathlib.Path`.
 
     Returns
     -------
@@ -432,31 +479,31 @@ def _yaml_reader(file: str) -> dict:
         File does not exist.
 
     """
-    _, extension = os.path.splitext(file)
+    is_bare_name = isinstance(filepath, str) and not os.path.dirname(filepath)
+    filepath = pathlib.Path(filepath)
 
-    if extension == '':
-        file += '.yaml'
-    elif extension != '.yaml':
+    if filepath.suffix == '':
+        filepath = filepath.with_suffix('.yaml')
+    elif filepath.suffix != '.yaml':
         raise ValueError("Invalid file. Only supports '.yaml' files.")
 
-    here = os.path.dirname(__file__)
-    resources = pathlib.Path(here).joinpath('_resources')
+    resources = pathlib.Path(__file__).parent / '_resources'
 
-    if file in os.listdir(resources):
-        _short_warn(f"Using the default parameter file '{file}'.")
-        file = resources.joinpath(file)
+    if is_bare_name and filepath.name in os.listdir(resources):
+        _short_warn(f"Using the default parameter file '{filepath.name}'.")
+        filepath = resources.joinpath(filepath.name)
 
     def eval_constructor(loader, node):
         return eval(node.value)
 
-    if not os.path.exists(file):
-        raise FileNotFoundError(f"File '{file}' does not exist.")
+    if not filepath.exists():
+        raise FileNotFoundError(f"{filepath=} does not exist.")
 
     reader = YAML(typ='safe')
 
     add_constructor('!eval', eval_constructor, constructor=SafeConstructor)
 
-    with open(file, 'r') as f:
+    with open(filepath, 'r') as f:
         data = reader.load(f)
 
     return data

@@ -4,6 +4,7 @@ import atexit
 import textwrap
 
 from copy import deepcopy
+from numbers import Integral
 from typing import TYPE_CHECKING, Iterable, Callable, TypeVar
 
 import numpy as np
@@ -32,8 +33,22 @@ class ExitHandler:
 
     @classmethod
     def register_atexit(cls, func: Callable) -> None:
+        """
+        Register a function to run at exit, unless already registered.
+
+        Parameters
+        ----------
+        func : Callable
+            The function to register.
+
+        Returns
+        -------
+        None.
+
+        """
         if func not in cls._registered:
             atexit.register(func)
+            cls._registered.append(func)
 
 
 class BaseSolution(IDAResult):
@@ -70,7 +85,7 @@ class BaseSolution(IDAResult):
 
             indent = ' ' * (len(label) + 1)
 
-            if classname == 'StepSolution' and len(value) == 1:
+            if isinstance(self, StepSolution) and len(value) == 1:
                 text = label + f"{value[0]!r}"
             else:
                 text = label + "[" + ", ".join(f"{v!r}" for v in value) + "]"
@@ -161,12 +176,17 @@ class BaseSolution(IDAResult):
             ocv = sim.ocv(soc)
             R0 = sim.R0(soc, T_cell)
 
-            assert isinstance(ocv, np.ndarray)
-            assert isinstance(R0, np.ndarray)
-            assert ocv.shape == soc.shape
-            assert R0.shape == soc.shape
+            vectorized = (
+                isinstance(ocv, np.ndarray)
+                and isinstance(R0, np.ndarray)
+                and ocv.shape == soc.shape
+                and R0.shape == soc.shape
+            )
 
-        except (TypeError, AssertionError):
+        except (TypeError, ValueError):
+            vectorized = False
+
+        if not vectorized:
             ocv = np.empty_like(soc)
             R0 = np.empty_like(soc)
             for i in range(soc.size):
@@ -293,6 +313,7 @@ class CycleSolution(BaseSolution):
         self.y = np.empty([t_size, sv_size])
         self.yp = np.empty([t_size, sv_size])
 
+        self.i_events = None
         self.t_events = None
         self.y_events = None
         self.yp_events = None
@@ -329,10 +350,12 @@ class CycleSolution(BaseSolution):
 
             if soln.t_events is not None:
                 if self.t_events is None:
+                    self.i_events = [soln.i_events[0].astype(int)]
                     self.t_events = shift_t_events
                     self.y_events = soln.y_events
                     self.yp_events = soln.yp_events
                 else:
+                    self.i_events.append(soln.i_events[0].astype(int))
                     self.t_events = np.concat([self.t_events, shift_t_events])
                     self.y_events = np.concat([self.y_events, soln.y_events])
                     self.yp_events = np.concat([self.yp_events, soln.yp_events])
@@ -363,8 +386,9 @@ class CycleSolution(BaseSolution):
 
         Parameters
         ----------
-        idx : int | tuple
-            The step index (int) or range (first, last) to return.
+        idx : int or tuple
+            The step index (int) or range (first, last) to return. Note that the
+            tuple range is inclusive of both the first and last indices.
 
         Returns
         -------
@@ -373,12 +397,19 @@ class CycleSolution(BaseSolution):
             is an int, and a CycleSolution will be returned for the range of
             requested steps when 'idx' is a tuple.
 
+        Raises
+        ------
+        TypeError
+            'idx' must be type int or tuple[int, int].
+
         """
-        if isinstance(idx, int):
+        if isinstance(idx, Integral):
             return deepcopy(self._solns[idx])
-        elif isinstance(idx, (tuple, list)):
+        elif isinstance(idx, (tuple, list)) and len(idx) == 2:
             solns = self._solns[idx[0] : idx[1] + 1]
             return CycleSolution(*solns)
+        else:
+            raise TypeError("'idx' must be type int or tuple[int, int].")
 
     def append_soln(self, soln: Solution, t_shift: float = 1e-3) -> None:
         """
@@ -388,7 +419,7 @@ class CycleSolution(BaseSolution):
 
         Parameters
         ----------
-        soln : StepSolution | CycleSolution
+        soln : StepSolution or CycleSolution
             A solution (step or cycle) to append to the end of the current
             instance.
         t_shift : float, optional
@@ -438,6 +469,7 @@ class CycleSolution(BaseSolution):
         if soln.t_events is not None:
             shift_t_events = self.t[-1] + soln.t_events + t_shift
 
+        new_i_events = []
         if isinstance(soln, StepSolution):
             self._solns.append(soln)
 
@@ -449,6 +481,8 @@ class CycleSolution(BaseSolution):
             self.njev.append(soln.njev)
 
             self._timers.append(soln._timer)
+
+            new_i_events = [soln.i_events[0].astype(int)]
 
         elif isinstance(soln, CycleSolution):
             self._solns.extend(soln._solns)
@@ -462,16 +496,20 @@ class CycleSolution(BaseSolution):
 
             self._timers.extend(soln._timers)
 
+            new_i_events = list(soln.i_events)
+
         self.t = np.concat([self.t, shift_t])
         self.y = np.concat([self.y, soln.y])
         self.yp = np.concat([self.yp, soln.yp])
 
         if soln.t_events is not None:
             if self.t_events is None:
+                self.i_events = new_i_events
                 self.t_events = shift_t_events
                 self.y_events = soln.y_events
                 self.yp_events = soln.yp_events
             else:
+                self.i_events.extend(new_i_events)
                 self.t_events = np.concat([self.t_events, shift_t_events])
                 self.y_events = np.concat([self.y_events, soln.y_events])
                 self.yp_events = np.concat([self.yp_events, soln.yp_events])
