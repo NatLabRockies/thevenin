@@ -29,7 +29,6 @@ extensions = [
     'sphinx.ext.viewcode',
     'myst_nb',
     'sphinx_design',
-    # 'sphinx_favicon',
     'sphinx_copybutton',
 ]
 
@@ -110,7 +109,7 @@ html_theme_options = {
 napoleon_use_rtype = False
 napoleon_custom_sections = [
     'Summary',
-    'Accessing the documentation',
+    'Accessing the Documentation',
 ]
 
 
