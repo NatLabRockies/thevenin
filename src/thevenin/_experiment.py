@@ -100,7 +100,7 @@ class Experiment:
         mode : str
             Control mode, {'current_A', 'current_C', 'voltage_V', 'power_W'}.
         value : float or Callable
-            Value of boundary contion mode, in the appropriate units.
+            Value of boundary condition mode, in the appropriate units.
         tspan : float or tuple[float, float] or 1D np.array
             Relative times for recording solution [s]. Providing a float will
             result in the solver picking time steps to save on its own. A tuple
@@ -109,8 +109,8 @@ class Experiment:
             between steps (also seconds). You can also provide any custom array
             of times at which to save the solution by providing a 1D `np.array`;
             however, the first element must be zero and the array must be in a
-            monotonically increasing order, and there must be at least three
-            elements. An array like `np.array([0, tmax])` will will result in
+            monotonically increasing order, and there must be at least two
+            elements. An array like `np.array([0, tmax])` will result in
             the solver choosing its own time steps, similar to just providing a
             float. See notes for more information.
         limits : tuple[str, float], optional
