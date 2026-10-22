@@ -14,6 +14,7 @@
 - Change `tspan` constructor in experiments to allow floats, but not `(tmax, Nt)` ([#29](https://github.com/NatLabRockies/thevenin/pull/29))
 
 ### Bug Fixes
+- Fix typos, stale linting/style docs, and `demands` wording; drop unused `sphinx-favicon` ([#37](https://github.com/NatLabRockies/thevenin/pull/37))
 - Fix event time limits, `Prediction` options reset, and breaking numpy types ([#36](https://github.com/NatLabRockies/thevenin/pull/36))
 - Update patching policy for releases, fix warnings in tests ([#25](https://github.com/NatLabRockies/thevenin/pull/25))
 - Fix links to Read the Docs `Development` page in `README` file ([#21](https://github.com/NatLabRockies/thevenin/pull/21))
