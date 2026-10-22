@@ -109,7 +109,7 @@ class Experiment:
             between steps (also seconds). You can also provide any custom array
             of times at which to save the solution by providing a 1D `np.array`;
             however, the first element must be zero and the array must be in a
-            monotonically increasing order, and there must be at least two
+            monotonically increasing order, and there must be at least three
             elements. An array like `np.array([0, tmax])` will result in
             the solver choosing its own time steps, similar to just providing a
             float. See notes for more information.

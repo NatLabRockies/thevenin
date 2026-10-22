@@ -23,13 +23,13 @@ json_url = 'https://thevenin.readthedocs.io/latest/_static/switcher.json'
 
 extensions = [
     'sphinx.ext.todo',
-    'autoapi.extension',
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'myst_nb',
     'sphinx_design',
     'sphinx_copybutton',
+    'autoapi.extension',
 ]
 
 templates_path = ['_templates']
@@ -57,20 +57,16 @@ highlight_language = 'console'
 
 html_theme = 'pydata_sphinx_theme'
 
-# html_favicon = '_static/favicon.ico'
 html_context = {'default_mode': 'dark'}
 
 html_static_path = ['_static']
+
 html_js_files = ['custom.js']
 html_css_files = ['custom.css']
 
 html_sidebars = {'index': [], '**': ['sidebar-nav-bs']}
 
 html_theme_options = {
-    # 'logo': {
-    #     'image_light': '_static/light.svg',
-    #     'image_dark': '_static/dark.svg',
-    # },
     'icon_links': [
         {
             'name': 'GitHub',
@@ -88,7 +84,8 @@ html_theme_options = {
     'header_links_before_dropdown': 5,
     'footer_start': ['copyright'],
     'footer_end': ['sphinx-version'],
-    'navbar_persistent': ['search-button-field'],
+    'navbar_persistent': ['search-button'],
+    'navbar_end': ['navbar-icon-links', 'theme-switcher'],
     'primary_sidebar_end': ['sidebar-ethical-ads'],
     'secondary_sidebar_items': ['page-toc'],
     'search_bar_text': 'Search...',
@@ -107,6 +104,7 @@ html_theme_options = {
 # https://sphinx-doc.org/en/master/usage/extensions/napoleon.html
 
 napoleon_use_rtype = False
+napoleon_numpy_docstring = True
 napoleon_custom_sections = [
     'Summary',
     'Accessing the Documentation',
