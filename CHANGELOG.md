@@ -14,7 +14,6 @@
 - Change `tspan` constructor in experiments to allow floats, but not `(tmax, Nt)` ([#29](https://github.com/NatLabRockies/thevenin/pull/29))
 
 ### Bug Fixes
-- Fix typos, stale linting/style docs, and `demands` wording; drop unused `sphinx-favicon` ([#37](https://github.com/NatLabRockies/thevenin/pull/37))
 - Fix event time limits, `Prediction` options reset, and breaking numpy types ([#36](https://github.com/NatLabRockies/thevenin/pull/36))
 - Update patching policy for releases, fix warnings in tests ([#25](https://github.com/NatLabRockies/thevenin/pull/25))
 - Fix links to Read the Docs `Development` page in `README` file ([#21](https://github.com/NatLabRockies/thevenin/pull/21))
@@ -27,6 +26,7 @@
 - `initial_state` was renamed to `state0` in `sim.pre()` ([#14](https://github.com/NatLabRockies/thevenin/pull/14))
 
 ### Chores
+- Fix typos, stale linting/style docs, and `demands` wording; drop unused `sphinx-favicon` ([#37](https://github.com/NatLabRockies/thevenin/pull/37))
 - Rename the `loadfns` module to `demands`, move version to v1.0.0.dev0 for breaking changes ([#35](https://github.com/NatLabRockies/thevenin/pull/35))
 - Move workflows to use Python 3.15 as upper bound, pin sksundae to >= 1.2.0 ([#34](https://github.com/NatLabRockies/thevenin/pull/34))
 - Switch linter over to `ruff`, enable `codecov` workflow, update README badges ([#31](https://github.com/NatLabRockies/thevenin/pull/31))
