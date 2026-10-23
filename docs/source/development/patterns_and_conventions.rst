@@ -31,28 +31,43 @@ In our codebase, import statements are organized into three distinct groups base
 2. **Dependency Imports:** Imports from external dependencies installed via package managers (e.g., `pip` or `conda`).
 3. **Local Package Imports:** Imports that come from within our package.
 
-Within each group, we generally list imports in ascending order of their length (shortest to longest), as shown in the example below. This helps maintain a neat and consistent style throughout the code. Note that it is not necessary to comment each grouped section, this is only done for clarity in the example.
+Each group is further split into two subgroups, in order:
+
+1. **Module Imports:** Statements of the form `import x` or `import x as y`.
+2. **From Imports:** Statements of the form `from x import y`.
+
+Separate each non-empty subgroup with a blank line. Within each subgroup, list imports in ascending order of their length (shortest to longest), as shown in the example below. When used, `from __future__ import annotations` comes first, on its own, and any `if TYPE_CHECKING:` blocks come after all regular imports. This helps maintain a neat and consistent style throughout the code. Note that it is not necessary to comment each grouped section, this is only done for clarity in the example.
 
 .. code-block:: python
+
+    from __future__ import annotations
 
     # Standard Library Imports
     import os
     import sys
     import datetime
 
+    from copy import deepcopy
+    from typing import TYPE_CHECKING
+
     # Dependency Imports
     import numpy as np
     import matplotlib.pyplot as plt
 
+    from ruamel.yaml import YAML
+
     # Local Package Imports
     from ._experiment import Experiment
-    from thevenin.plotutils import StepFunction
+    from thevenin.demands import StepFunction
+
+    if TYPE_CHECKING:
+        from ._solutions import StepSolution
 
 Placement
 ^^^^^^^^^
 * Common dependencies that are used across multiple functions should be imported at the top of the module.
 * For heavier dependencies or rarely used ones, consider importing them only where needed (within functions/methods) to minimize unnecessary load times.
-* Regardless of placement, at the top of a file of within a function/method, ordering within each group should follow the ordering listed above.
+* Regardless of placement, at the top of a file or within a function/method, ordering within each group should follow the ordering listed above.
 
 Class Considerations
 --------------------
@@ -78,7 +93,7 @@ In some cases, exceptions to this order may be made, particularly if moving a hi
         # Special Members
         @property
         def value(self) -> int:
-        return self._value
+            return self._value
         
         # User-Facing Methods
         def do_something(self) -> str:

@@ -49,7 +49,7 @@ class BaseModel(ABC):
             M_hyst        max hysteresis magnitude   *Callable*, V
             R0            series resistance          *Callable*, Ohm
             Rj            resistance in RCj          *Callable*, Ohm
-            Cj            capacity in RCj            *Callable*, F
+            Cj            capacitance in RCj         *Callable*, F
             ============= ========================== ================
 
         Raises

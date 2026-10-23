@@ -283,7 +283,7 @@ class Prediction(BaseModel):
         Parameters
         ----------
         array : 1D np.array
-            State variables array compatible with the solver..
+            State variables array compatible with the solver.
 
         Returns
         -------

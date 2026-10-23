@@ -45,7 +45,7 @@ where :math:`m` is mass (kg), :math:`C_p` is specific heat capacity (J/kg/K), :m
       &\dot{Q}_{\rm conv} = h_TA(T_{\infty} - T_{\rm cell}),
     \end{align}
 
-where :math:`h_T` is the convecitive heat transfer coefficient (W/m\ :sup:`2`/K), :math:`A` is heat loss area (m\ :sup:`2`), and :math:`T_{\infty}` is the air/room temperature (K). :math:`V_{\rm OCV}` is the open circuit voltage (V) and is a function of SOC.
+where :math:`h_T` is the convective heat transfer coefficient (W/m\ :sup:`2`/K), :math:`A` is heat loss area (m\ :sup:`2`), and :math:`T_{\infty}` is the air/room temperature (K). :math:`V_{\rm OCV}` is the open circuit voltage (V) and is a function of SOC.
 
 The overall cell voltage is
 

@@ -4,13 +4,13 @@ import numpy as np
 
 
 class Ramp:
-    """Linearly ramping load."""
+    """Linearly ramping demand."""
 
     __slots__ = ('_m', '_b')
 
     def __init__(self, m: float, b: float = 0.0) -> None:
         """
-        A load profile that continuously ramps with slope m.
+        A demand profile that continuously ramps with slope m.
 
         Parameters
         ----------
@@ -31,7 +31,7 @@ class Ramp:
 
 
 class Ramp2Constant:
-    """Ramp to a constant load."""
+    """Ramp to a constant demand."""
 
     __slots__ = ('_m', '_b', '_step', '_sharpness')
 
@@ -43,8 +43,8 @@ class Ramp2Constant:
         sharpness: float = 100.0,
     ) -> None:
         """
-        A load profile that ramps with slope m unil the constant step value
-        is reached, after which, the load is equal to the step constant. A
+        A demand profile that ramps with slope m until the constant step value
+        is reached, after which, the demand is equal to the step constant. A
         sigmoid is used to smooth the transition between the two piecewise
         functions. Use a large 'sharpness' to reduce smoothing effects.
 

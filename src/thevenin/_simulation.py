@@ -364,7 +364,7 @@ class _EventsFunction:
             exit prior to 'tspan[-1]' if any 'events' index equals zero.
         userdata : dict
             Dictionary detailing an experimental step, with the 'events' key
-            added and filled within the `rhs_funcs()' method.
+            added and filled within the `_rhsfn()` method.
 
         Returns
         -------
@@ -390,7 +390,7 @@ def _setup_eventsfn(limits: tuple[str, float], kwargs: dict) -> None:
         A tuple of event function criteria arranged as ordered pairs of limit
         names and values, e.g., ('time_h', 10., 'voltage_V', 4.2).
     kwargs : dict
-        The IDASolver keyword argumnents dictionary. Both the 'eventsfn' and
+        The IDASolver keyword arguments dictionary. Both the 'eventsfn' and
         'num_events' keyword arguments must be added to 'kwargs'.
 
     Returns
