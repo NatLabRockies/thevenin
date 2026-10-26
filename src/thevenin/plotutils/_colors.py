@@ -3,14 +3,16 @@ from __future__ import annotations
 import numpy as np
 import matplotlib as mpl
 
+from numpy.typing import ArrayLike
+
 
 def get_colors(
     size: int,
-    data: np.ndarray = None,
-    norm: np.ndarray = None,
+    data: ArrayLike | None = None,
+    norm: ArrayLike | None = None,
     alpha: float = 1.0,
     cmap: str = 'jet',
-):
+) -> list[tuple[float, float, float, float]]:
     """
     Sample colors from 'cmap'.
 
@@ -36,7 +38,7 @@ def get_colors(
 
     Returns
     -------
-    colors : list
+    colors : list[tuple[float, float, float, float]]
         A list of (r, g, b, a) color codes.
 
     Raises

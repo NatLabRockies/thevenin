@@ -89,7 +89,7 @@ class Experiment:
         mode: str,
         value: float | Callable,
         tspan: tuple,
-        limits: tuple[str, float] = None,
+        limits: tuple[str, float] | None = None,
         **kwargs,
     ) -> None:
         """
@@ -113,14 +113,14 @@ class Experiment:
             elements. An array like `np.array([0, tmax])` will result in
             the solver choosing its own time steps, similar to just providing a
             float. See notes for more information.
-        limits : tuple[str, float], optional
+        limits : tuple[str, float] or None, optional
             Stopping criteria for the new step, must be entered in sequential
             name/value pairs. Allowable names are {'soc', 'temperature_K',
             'current_A', 'current_C', 'voltage_V', 'power_W', 'capacity_Ah',
             'time_s', 'time_min', 'time_h'}. Values for each limit should
             immediately follow a corresponding name and match its units. Time
             limits are in reference to total experiment time. The default is
-            None.
+            None, which neglects early stopping criteria for the step.
         **kwargs : dict, optional
             IDASolver keyword arguments specific to the new step only.
 
@@ -254,14 +254,14 @@ def _check_mode(mode: str) -> None:
         raise ValueError(f"{mode=} is invalid; valid values are {valid}.")
 
 
-def _check_limits(limits: tuple[str, float]) -> None:
+def _check_limits(limits: tuple[str, float] | None) -> None:
     """
     Check the limit criteria.
 
     Parameters
     ----------
-    limits : tuple[str, float]
-        Stopping criteria and limiting value.
+    limits : tuple[str, float] or None
+        Stopping criteria and limiting value. None skips the checks.
 
     Returns
     -------
