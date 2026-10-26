@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 
 from copy import deepcopy
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, TypeAlias
 
 import numpy as np
 
@@ -12,9 +12,9 @@ from thevenin._basemodel import BaseModel
 if TYPE_CHECKING:
     from ._experiment import Experiment
     from ._prediction import Prediction, TransientState
-    from ._solutions import BaseSolution, StepSolution, CycleSolution
+    from ._solutions import StepSolution, CycleSolution
 
-    Solution = TypeVar('Solution', bound='BaseSolution')
+    Solution: TypeAlias = StepSolution | CycleSolution
 
 
 class Simulation(BaseModel):
