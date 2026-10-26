@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, TypeVar
+from typing import TYPE_CHECKING, Callable, TypeAlias
 
 import numpy as np
 
@@ -8,9 +8,9 @@ from thevenin._basemodel import BaseModel
 
 if TYPE_CHECKING:
     from ._simulation import Simulation
-    from ._solutions import BaseSolution
+    from ._solutions import StepSolution, CycleSolution
 
-    Solution = TypeVar('Solution', bound='BaseSolution')
+    Solution: TypeAlias = StepSolution | CycleSolution
 
 
 class TransientState:

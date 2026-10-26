@@ -9,38 +9,10 @@ import thevenin as thev
 import matplotlib.pyplot as plt
 
 
-def dict_params(num_RC_pairs: int = 0) -> dict:
-
-    coeffs = np.array([84.6, -348.6, 592.3, -534.3, 275.0, -80.3, 12.8, 2.8])
-
-    params = {
-        'num_RC_pairs': num_RC_pairs,
-        'soc0': 0.5,
-        'capacity': 1.0,
-        'ce': 1.0,
-        'gamma': 0.0,
-        'mass': 0.5,
-        'isothermal': False,
-        'Cp': 1150.0,
-        'T_inf': 300.0,
-        'h_therm': 12.0,
-        'A_therm': 1.0,
-        'ocv': lambda soc: np.polyval(coeffs, soc),
-        'M_hyst': lambda soc: 0.0,
-        'R0': lambda soc, T_cell: 0.05 + 0.05 * soc - T_cell / 1e4,
-    }
-
-    for j in range(1, num_RC_pairs + 1):
-        params['R' + str(j)] = lambda soc, T: 0.01 + 0.01 * soc - T / 3e4
-        params['C' + str(j)] = lambda soc, T: 10.0 + 10.0 * soc - T / 3e1
-
-    return params
-
-
 @pytest.fixture(scope='function')  # cannot be module b/c appends
 def soln():
 
-    warnings.filterwarnings('ignore')
+    warnings.filterwarnings('ignore', message='.*default parameter file.*')
 
     sim = thev.Simulation()
 
@@ -63,7 +35,7 @@ def soln():
 @pytest.fixture(scope='function')
 def rest():
 
-    warnings.filterwarnings('ignore')
+    warnings.filterwarnings('ignore', message='.*default parameter file.*')
 
     sim = thev.Simulation()
 
@@ -164,7 +136,7 @@ def test_exit_handler():
     ExitHandler._registered.remove(func)
 
 
-def test_append_errors(soln):
+def test_append_errors(dict_params, soln):
 
     # append wrong size solution (different num_RC_pairs)
     sim0 = thev.Simulation(dict_params(0))
@@ -224,7 +196,7 @@ def test_append_w_events(rest, soln):
     assert len(rest.t_events) == 2
 
 
-def test_np_incompatible_funcs():
+def test_np_incompatible_funcs(dict_params):
 
     def ocv(soc):
         if isinstance(soc, np.ndarray):

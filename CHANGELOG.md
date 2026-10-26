@@ -26,6 +26,7 @@
 - `initial_state` was renamed to `state0` in `sim.pre()` ([#14](https://github.com/NatLabRockies/thevenin/pull/14))
 
 ### Chores
+- Fix type hints, use pathlib, clean up tests and pytest config ([#39](https://github.com/NatLabRockies/thevenin/pull/39))
 - Use setup-python in release.yml: details; add timeout to the PyPI version check ([#38](https://github.com/NatLabRockies/thevenin/pull/38))
 - Fix typos, stale linting/style docs, and `demands` wording; drop unused `sphinx-favicon` ([#37](https://github.com/NatLabRockies/thevenin/pull/37))
 - Rename the `loadfns` module to `demands`, move version to v1.0.0.dev0 for breaking changes ([#35](https://github.com/NatLabRockies/thevenin/pull/35))

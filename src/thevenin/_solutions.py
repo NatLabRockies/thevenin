@@ -5,7 +5,7 @@ import textwrap
 
 from copy import deepcopy
 from numbers import Integral
-from typing import TYPE_CHECKING, Iterable, Callable, TypeVar
+from typing import TYPE_CHECKING, Iterable, Callable, TypeAlias
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,7 +15,7 @@ from .solvers import IDAResult
 if TYPE_CHECKING:
     from ._simulation import Simulation
 
-    Solution = TypeVar('Solution', bound='BaseSolution')
+    Solution: TypeAlias = 'StepSolution | CycleSolution'
 
 
 class ExitHandler:

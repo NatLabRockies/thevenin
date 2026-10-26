@@ -9,48 +9,20 @@ import numpy.testing as npt
 from scipy.integrate import cumulative_trapezoid
 
 
-def dict_params(num_RC_pairs: int = 0) -> dict:
-
-    coeffs = np.array([84.6, -348.6, 592.3, -534.3, 275.0, -80.3, 12.8, 2.8])
-
-    params = {
-        'num_RC_pairs': num_RC_pairs,
-        'soc0': 0.5,
-        'capacity': 1.0,
-        'ce': 1.0,
-        'gamma': 0.0,
-        'mass': 0.5,
-        'isothermal': False,
-        'Cp': 1150.0,
-        'T_inf': 300.0,
-        'h_therm': 12.0,
-        'A_therm': 1.0,
-        'ocv': lambda soc: np.polyval(coeffs, soc),
-        'M_hyst': lambda soc: 0.0,
-        'R0': lambda soc, T_cell: 0.05 + 0.05 * soc - T_cell / 1e4,
-    }
-
-    for j in range(1, num_RC_pairs + 1):
-        params['R' + str(j)] = lambda soc, T: 0.01 + 0.01 * soc - T / 3e4
-        params['C' + str(j)] = lambda soc, T: 10.0 + 10.0 * soc - T / 3e1
-
-    return params
-
-
 @pytest.fixture(scope='function')
-def sim_0RC():
+def sim_0RC(dict_params):
     params = dict_params(0)
     return thev.Simulation(params)
 
 
 @pytest.fixture(scope='function')
-def sim_1RC():
+def sim_1RC(dict_params):
     params = dict_params(1)
     return thev.Simulation(params)
 
 
 @pytest.fixture(scope='function')
-def sim_2RC():
+def sim_2RC(dict_params):
     params = dict_params(2)
     return thev.Simulation(params)
 
@@ -101,7 +73,7 @@ def dynamic_power():
     return expr
 
 
-def test_bad_initialization():
+def test_bad_initialization(dict_params):
 
     # wrong params type
     with pytest.raises(TypeError):
@@ -155,7 +127,7 @@ def test_local_yaml_paths_override_defaults(tmp_path, monkeypatch):
     # bare names still prefer the internal resource, with a warning
     with pytest.warns(UserWarning):
         params = _yaml_reader('params.yaml')
-        assert params['soc0'] == 1.
+        assert params['soc0'] == 1.0
 
 
 def test_sim_w_yaml_input(
@@ -189,7 +161,7 @@ def test_sim_w_yaml_input(
     assert all(soln.success)
 
 
-def test_bad_yaml_inputs():
+def test_bad_yaml_inputs(dict_params):
 
     # only .yaml extensions
     with pytest.raises(ValueError):
@@ -217,7 +189,7 @@ def test_bad_yaml_inputs():
         _ = thev.Simulation(params)
 
 
-def test_preprocessor_raises(dynamic_current):
+def test_preprocessor_raises(dict_params, dynamic_current):
 
     # can't change num_RC_pairs
     sim = thev.Simulation(dict_params(0))
@@ -358,7 +330,7 @@ def test_limits_are_exact(sim_1RC):
     npt.assert_allclose(charge.vars['soc'][-1], 0.9, atol=0.01)
 
 
-def test_simulation_subclass(dynamic_current):
+def test_simulation_subclass(dict_params, dynamic_current):
 
     class CustomSimulation(thev.Simulation):
         pass

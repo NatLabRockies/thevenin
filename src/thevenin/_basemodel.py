@@ -479,6 +479,9 @@ def _yaml_reader(filepath: os.PathLike) -> dict:
         File does not exist.
 
     """
+    from thevenin._templates import RESOURCES
+
+    # os.path keeps './' prefixes that pathlib would normalize away
     is_bare_name = isinstance(filepath, str) and not os.path.dirname(filepath)
     filepath = pathlib.Path(filepath)
 
@@ -487,11 +490,9 @@ def _yaml_reader(filepath: os.PathLike) -> dict:
     elif filepath.suffix != '.yaml':
         raise ValueError("Invalid file. Only supports '.yaml' files.")
 
-    resources = pathlib.Path(__file__).parent / '_resources'
-
-    if is_bare_name and filepath.name in os.listdir(resources):
+    if is_bare_name and RESOURCES.joinpath(filepath.name).is_file():
         _short_warn(f"Using the default parameter file '{filepath.name}'.")
-        filepath = resources.joinpath(filepath.name)
+        filepath = RESOURCES.joinpath(filepath.name)
 
     def eval_constructor(loader, node):
         return eval(node.value)

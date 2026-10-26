@@ -4,6 +4,8 @@ import pathlib
 
 from warnings import catch_warnings, filterwarnings
 
+RESOURCES = pathlib.Path(__file__).parent / '_resources'
+
 
 def download_templates(path: str | os.PathLike | None = None) -> None:
     """
@@ -17,13 +19,11 @@ def download_templates(path: str | os.PathLike | None = None) -> None:
         the current working directory is used.
 
     """
-    resources = pathlib.Path(os.path.dirname(__file__), '_resources')
-
     path = pathlib.Path(path or '.').joinpath('thevenin_templates')
     path.mkdir(parents=True, exist_ok=True)
 
     for name in list_templates():
-        orig = resources.joinpath(name)
+        orig = RESOURCES.joinpath(name)
         new = path.joinpath(name)
 
         shutil.copy(orig, new)
@@ -39,8 +39,7 @@ def list_templates() -> list[str]:
         A list of example file names from an internal `resources` folder.
 
     """
-    resources = pathlib.Path(os.path.dirname(__file__), '_resources')
-    return os.listdir(resources)
+    return [p.name for p in RESOURCES.iterdir()]
 
 
 def load_templates(*names: str) -> dict:
@@ -68,7 +67,6 @@ def load_templates(*names: str) -> dict:
     from thevenin._basemodel import _yaml_reader
 
     available = list_templates()
-    resources = pathlib.Path(os.path.dirname(__file__), '_resources')
 
     templates = []
     for name in names:
@@ -80,7 +78,7 @@ def load_templates(*names: str) -> dict:
 
         with catch_warnings():
             filterwarnings('ignore', message='.*Using the default.*')
-            template = _yaml_reader(resources.joinpath(name))
+            template = _yaml_reader(RESOURCES.joinpath(name))
 
         templates.append(template)
 
@@ -106,7 +104,6 @@ def print_templates(name: str) -> None:
 
     """
     available = list_templates()
-    resources = pathlib.Path(os.path.dirname(__file__), '_resources')
 
     if not name.endswith('.yaml'):
         name += '.yaml'
@@ -115,5 +112,5 @@ def print_templates(name: str) -> None:
         raise FileNotFoundError(f"{name} is not an available template.")
 
     print('=' * 30, name, '=' * 30, sep='\n')
-    with open(resources.joinpath(name), 'r') as f:
+    with open(RESOURCES.joinpath(name), 'r') as f:
         print(f.read())
