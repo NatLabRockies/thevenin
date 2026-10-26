@@ -1,7 +1,3 @@
-import os
-import pathlib
-import importlib
-
 import pytest
 import thevenin as thev
 
@@ -18,17 +14,15 @@ def test_download_templates(tmp_path):
 
 
 def test_list_templates():
+    from thevenin._templates import RESOURCES
 
     names = thev.list_templates()
     assert isinstance(names, list)
     assert all(isinstance(n, str) for n in names)
     assert len(names) > 0
 
-    package = importlib.util.find_spec('thevenin')
-    resources = pathlib.Path(os.path.dirname(package.origin), '_resources')
-
     for name in names:
-        assert resources.joinpath(name).is_file()
+        assert RESOURCES.joinpath(name).is_file()
 
 
 def test_load_templates():
